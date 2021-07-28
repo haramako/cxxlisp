@@ -10,6 +10,10 @@ const static regex ReParens(R"(^[()\[\]{}])");
 const static regex ReSpaces(R"(^[\s]+)");
 
 Token Lexer::Read() {
+  if (cur_.has_value()) {
+    return *cur_;
+  }
+
   smatch mr;
 
   // Skip spaces
@@ -24,16 +28,20 @@ Token Lexer::Read() {
 
   if (regex_search(s_.cbegin() + pos_, s_.cend(), mr, ReNumber)) {
     pos_ += mr.length();
-    return Token(stoi(mr[0]));
+    cur_ = Token((int)stoi(string(mr[0])));
   } else if (regex_search(s_.cbegin() + pos_, s_.cend(), mr, ReSymbol)) {
     pos_ += mr.length();
-    return Token(string(mr[0]));
+    cur_ = Token(string(mr[0]));
   } else if (regex_search(s_.cbegin() + pos_, s_.cend(), mr, ReParens)) {
     pos_ += mr.length();
-    return Token(string(mr[0])[0]);
+    cur_ = Token(string(mr[0])[0]);
+  } else {
+    cur_ = Token();
   }
 
-  return Token();
+  return *cur_;
 }
+
+void Lexer::Consume() { cur_.reset(); }
 
 } // namespace cxxlisp

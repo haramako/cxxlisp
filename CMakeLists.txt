@@ -12,12 +12,14 @@ project(cxxlisp)
 set(srcs
   value.cpp
   lexer.cpp
+  parser.cpp
   vm.cpp
   )
 
 set(test_srcs
   value_test.cpp
   lexer_test.cpp
+  parser_test.cpp
   vm.cpp)
   
 ## cxxlisp

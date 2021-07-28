@@ -3,7 +3,11 @@
 #include <string>
 #include <string_view>
 
+#include <iostream>
+
 namespace cxxlisp {
+
+using namespace std;
 
 enum class TokenType {
   None,
@@ -45,11 +49,14 @@ public:
 };
 
 class Lexer {
+  std::optional<Token> cur_;
+
 public:
   Lexer(std::string_view s) : s_(s), line_(0), pos_(0){};
   ~Lexer() {}
 
   Token Read();
+  void Consume();
   int Line() const { return line_; }
   int Pos() const { return pos_; }
 

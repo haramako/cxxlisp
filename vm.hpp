@@ -17,7 +17,9 @@ public:
 
   Atom Intern(const char *v);
   Atom Intern(const std::string &v) { return Intern(v.c_str()); }
-  const std::string &AtomToString(Atom atom) { return atomIdToKey_[atom.Id()]; }
+  const std::string &AtomToString(Atom atom) const {
+    return atomIdToKey_[atom.Id()];
+  }
 };
 
 } // namespace cxxlisp

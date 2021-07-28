@@ -28,13 +28,14 @@ enum class ValueType { NIL, NUMBER, ATOM, CELL, STRING, CUSTOM_OBJECT };
 class Value {
   ValueType type_;
   uintptr_t i_;
-  void *p_;
+  template <class T> T &ref() { return *reinterpret_cast<T *>(i_); }
+  template <class T> const T &ref() const { return *reinterpret_cast<T *>(i_); }
 
 public:
   Value() : type_(ValueType::NIL) {}
   Value(int v) : type_(ValueType::NUMBER), i_(v) {}
   Value(Atom v) : type_(ValueType::ATOM), i_(v.Id()) {}
-  Value(Cell *v) : type_(ValueType::CELL), p_(v) {}
+  Value(Cell *v) : type_(ValueType::CELL), i_((uintptr_t)v) {}
   Value(const std::string &v);
 
   ValueType Type() const { return type_; }
@@ -47,11 +48,13 @@ public:
 
   int AsNumber() const { return (int)i_; }
   Atom AsAtom() const { return Atom((int)i_); }
-  const Cell &AsCell() { return *((Cell *)p_); }
-  const StringValue &AsStringValue() { return *((StringValue *)p_); }
+  Cell &AsCell() { return ref<Cell>(); }
+  const Cell &AsCell() const { return ref<Cell>(); }
+  const StringValue &AsStringValue() { return ref<StringValue>(); }
   const std::string &AsString() const;
-  const CustomObject &AsCustomObject() { return *((CustomObject *)p_); }
+  const CustomObject &AsCustomObject() { return ref<CustomObject>(); }
 
+  const std::string ToString(const VM &vm) const;
   friend bool operator==(const Value &, const Value &);
 };
 
@@ -70,10 +73,10 @@ public:
  * Pair object.
  */
 class Cell final {
-  Value car_, cdr_;
-
 public:
   std::string str();
+  Value Car, Cdr;
+  Cell() : Car(), Cdr() {}
 };
 
 class StringValue final {
