@@ -6,6 +6,25 @@
 using namespace cxxlisp;
 using namespace std;
 
+#if 0
+TEST(Lexer, lexer) {
+  Lexer lex("hoge");
+  auto token = lex.Read();
+  EXPECT_EQ("hoge", string(token));
+}
+
+TEST(Lexer, ReadString) {
+  Lexer lex("\"hoge\"");
+  auto token = lex.Read();
+  EXPECT_EQ("\"hoge\"", string(token));
+}
+
+TEST(Lexer, ReadComment) {
+  Lexer lex("; comment \n 1");
+  auto token = lex.Read();
+  EXPECT_EQ("1", string(token));
+}
+
 TEST(ParserTest, Read) {
   VM vm;
   string srcs[] = {"1",     "sym-bol",        "\"string\"", "()",
@@ -16,6 +35,7 @@ TEST(ParserTest, Read) {
     EXPECT_EQ(src, v.ToString(vm));
   }
 }
+#endif
 
 TEST(ParserTest, ReadWithComment) {
   VM vm;
@@ -23,7 +43,10 @@ TEST(ParserTest, ReadWithComment) {
       {";hoge\n1", "1"},
       {";\n(1\n;hoge\n2)", "(1 2)"},
       {"(1 #;2 3)", "(1 3)"},
+      {"(1 #;2)", "(1)"}, // TODO: いまはエラーになってしまう
       {"(1 #;(2) 3)", "(1 3)"},
+      {"(1 #;(2))", "(1)"}, // TODO: いまはエラーになってしまう
+      {"(#;(2) )", "()"},   // TODO: いまはエラーになってしまう
   };
   for (auto const src : srcs) {
     Parser p{&vm, src[0]};

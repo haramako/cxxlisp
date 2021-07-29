@@ -41,8 +41,3 @@ TEST(ValueTest, String) {
   EXPECT_NE(Value("hoge"), Value("fuga"));
   EXPECT_EQ("hoge", Value("hoge").AsString());
 }
-
-TEST(ValueTest, Hoge) {
-  EXPECT_EQ(true, true);
-  1;
-}

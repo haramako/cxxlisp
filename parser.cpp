@@ -1,3 +1,5 @@
+#include <regex>
+
 #include "parser.hpp"
 #include "vm.hpp"
 
@@ -5,21 +7,107 @@ namespace cxxlisp {
 
 using namespace std;
 
+const static regex RE_NUMBER(R"(^[0-9]+)");
+const static regex RE_IDENT(R"(^[a-zA-Z_\-+*/][a-zA-Z_\-+*/.1-9]*)");
+const static regex RE_STRING(R"(^"([^"]*)\")");
+const static regex RE_SYMBOL(R"(^[()\[\]{}.#\\'`,;])");
+const static regex RE_SPACES(R"(^[\s]+)");
+const static regex RE_LINE_COMMENT(R"(^;[^\n]*\n)");
+const static regex RE_SEXP_COMMENT(R"(^#;)");
+
+Token::operator string() const {
+  switch (Type) {
+  case TokenType::EOS:
+    return std::string("#EOS");
+  case TokenType::NUMBER:
+    return std::to_string(Number);
+  case TokenType::SYMBOL:
+    return std::string{Char};
+  case TokenType::IDENT:
+    return Str;
+  case TokenType::STRING:
+    return '"' + Str + '"';
+  default:
+    throw "BUG";
+  }
+}
+
+//==============================================================================
+// Parser
+//==============================================================================
+
+Token Parser::next() {
+
+  if (cur_.has_value()) {
+    return *cur_;
+  }
+
+  smatch mr;
+
+  auto search = [&](smatch &result, const regex &re) {
+    if (regex_search(s_.cbegin() + pos_, s_.cend(), result, re)) {
+      pos_ += mr.length();
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  // Skip spaces.
+  for (;;) {
+
+    // Skip and advance position and line.
+    auto skip = [](smatch &mr, int &pos, int &line) {
+      auto s = mr.str();
+      line += count_if(s.begin(), s.end(), [](char c) { return c == '\n'; });
+    };
+
+    if (search(mr, RE_SPACES)) {
+      skip(mr, pos_, line_);
+    } else if (search(mr, RE_LINE_COMMENT)) {
+      skip(mr, pos_, line_);
+    } else if (search(mr, RE_SEXP_COMMENT)) {
+      skip(mr, pos_, line_);
+      Read(); // Discard SEXP.
+    } else {
+      break;
+    }
+  }
+
+  if (search(mr, RE_NUMBER)) {
+    cur_ = Token((int)stoi(mr[0]));
+  } else if (search(mr, RE_IDENT)) {
+    cur_ = Token(string(mr[0]));
+  } else if (search(mr, RE_STRING)) {
+    cur_ = Token(TokenType::STRING, string(mr[1]));
+  } else if (search(mr, RE_SYMBOL)) {
+    cur_ = Token(string(mr[0])[0]);
+  } else {
+    cur_ = Token();
+  }
+
+  // cout << "token: " << *cur_ << endl;
+
+  return *cur_;
+}
+
+void Parser::consume() { cur_.reset(); }
+
 Value Cons(Value car, Value cdr) { return new Cell(car, cdr); }
 
 Value Parser::Read() {
-  Token t = lex_.Read();
+  Token t = next();
   switch (t.Type) {
-  case TokenType::NONE:
-    lex_.Consume();
+  case TokenType::EOS:
+    consume();
     return NIL;
 
   case TokenType::NUMBER:
-    lex_.Consume();
+    consume();
     return Value(t.Number);
 
-  case TokenType::PAREN: {
-    lex_.Consume();
+  case TokenType::SYMBOL: {
+    consume();
     switch (t.Char) {
     case '(':
       return parseList();
@@ -38,11 +126,11 @@ Value Parser::Read() {
     }
   }
 
-  case TokenType::SYMBOL:
-    lex_.Consume();
+  case TokenType::IDENT:
+    consume();
     return Value(vm_->Intern(t.Str));
   case TokenType::STRING:
-    lex_.Consume();
+    consume();
     return Value(t.Str);
   }
   return NIL;
@@ -52,18 +140,18 @@ Value Parser::parseList() {
   Cell *head = nullptr;
   Cell *tail = nullptr;
   for (;;) {
-    auto t = lex_.Read();
-    if (t.Type == TokenType::PAREN && t.Char == ')') {
-      lex_.Consume();
+    auto t = next();
+    if (t.Type == TokenType::SYMBOL && t.Char == ')') {
+      consume();
       // End of list (a b | )
       if (!head) {
         return NIL;
       } else {
         return head;
       }
-    } else if (t.Type == TokenType::PAREN && t.Char == '.') {
+    } else if (t.Type == TokenType::SYMBOL && t.Char == '.') {
       // Dot list (a | . b)
-      lex_.Consume();
+      consume();
       if (!head) {
         throw "BUG";
       } else {
@@ -86,24 +174,15 @@ Value Parser::parseList() {
 }
 
 Value Parser::parseReadMacro() {
-  auto t = lex_.Read(true);
-  if (t.Type == TokenType::SYMBOL) {
-    lex_.Consume();
+  auto t = next();
+  if (t.Type == TokenType::IDENT) {
+    consume();
     if (t.Str == "f") {
       // #f
       return BOOL_F;
     } else if (t.Str == "t") {
       // #t
       return BOOL_T;
-    } else {
-      throw "BUG";
-    }
-  } else if (t.Type == TokenType::PAREN) {
-    lex_.Consume();
-    if (t.Char == ';') {
-      // SEXP comment.
-      Read(); // discard SEXP as comment.
-      return Read();
     } else {
       throw "BUG";
     }

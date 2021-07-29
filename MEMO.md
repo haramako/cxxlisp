@@ -2,7 +2,7 @@
 
 # TODO
 
-- lexer
+- lexer/parser
   - ; コメント
   - ""
   - #f
@@ -16,6 +16,10 @@
   - ` = quasi-quote
   - , = unquote
   x リードマクロ
+
+- executer
+  - 
+  
 
 
 # 基本方針
