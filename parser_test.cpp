@@ -22,6 +22,8 @@ TEST(ParserTest, ReadWithComment) {
   string srcs[][2] = {
       {";hoge\n1", "1"},
       {";\n(1\n;hoge\n2)", "(1 2)"},
+      {"(1 #;2 3)", "(1 3)"},
+      {"(1 #;(2) 3)", "(1 3)"},
   };
   for (auto const src : srcs) {
     Parser p{&vm, src[0]};

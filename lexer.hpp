@@ -59,7 +59,7 @@ public:
   Lexer(std::string_view s) : s_(s), line_(0), pos_(0){};
   ~Lexer() {}
 
-  Token Read();
+  Token Read(bool skip_comment = false);
   void Consume();
   int Line() const { return line_; }
   int Pos() const { return pos_; }

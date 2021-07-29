@@ -54,14 +54,15 @@ Value Parser::parseList() {
   for (;;) {
     auto t = lex_.Read();
     if (t.Type == TokenType::PAREN && t.Char == ')') {
-      // End of list
+      lex_.Consume();
+      // End of list (a b | )
       if (!head) {
         return NIL;
       } else {
         return head;
       }
     } else if (t.Type == TokenType::PAREN && t.Char == '.') {
-      // Dot list
+      // Dot list (a | . b)
       lex_.Consume();
       if (!head) {
         throw "BUG";
@@ -70,7 +71,7 @@ Value Parser::parseList() {
         return head;
       }
     } else {
-      // Normal list element
+      // Normal list element (a | b ...)
       if (!head) {
         head = new Cell();
         tail = head;
@@ -85,13 +86,24 @@ Value Parser::parseList() {
 }
 
 Value Parser::parseReadMacro() {
-  auto t = lex_.Read();
+  auto t = lex_.Read(true);
   if (t.Type == TokenType::SYMBOL) {
     lex_.Consume();
     if (t.Str == "f") {
+      // #f
       return BOOL_F;
     } else if (t.Str == "t") {
+      // #t
       return BOOL_T;
+    } else {
+      throw "BUG";
+    }
+  } else if (t.Type == TokenType::PAREN) {
+    lex_.Consume();
+    if (t.Char == ';') {
+      // SEXP comment.
+      Read(); // discard SEXP as comment.
+      return Read();
     } else {
       throw "BUG";
     }

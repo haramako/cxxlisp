@@ -8,10 +8,11 @@ using namespace std;
 const static regex ReNumber(R"(^[0-9]+)");
 const static regex ReSymbol(R"(^[a-zA-Z_\-+*/][a-zA-Z_\-+*/.1-9]*)");
 const static regex ReString(R"(^"([^"]*)\")");
-const static regex ReParens(R"(^[()\[\]{}.#\\'`,])");
-const static regex ReSpaces(R"(^([\s]+|;[^\n]*\n)+)");
+const static regex ReParens(R"(^[()\[\]{}.#\\'`,;])");
+const static regex ReSpaces(R"(^[\s]+)");
+const static regex ReLineComment(R"(^;[^\n]*\n)");
 
-Token Lexer::Read() {
+Token Lexer::Read(bool skip_comment) {
   if (cur_.has_value()) {
     return *cur_;
   }
@@ -19,12 +20,25 @@ Token Lexer::Read() {
   smatch mr;
 
   // Skip spaces
-  if (regex_search(s_.cbegin() + pos_, s_.cend(), mr, ReSpaces)) {
-    pos_ += mr.length();
-    for (auto const c : string(mr[0])) {
-      if (c == '\n') {
-        line_++;
+  for (;;) {
+
+    // Skip and advance position and line.
+    auto skip = [](smatch &mr, int &pos, int &line) {
+      pos += mr.length();
+      for (auto const c : string(mr[0])) {
+        if (c == '\n') {
+          line++;
+        }
       }
+    };
+
+    if (regex_search(s_.cbegin() + pos_, s_.cend(), mr, ReSpaces)) {
+      skip(mr, pos_, line_);
+    } else if (!skip_comment &&
+               regex_search(s_.cbegin() + pos_, s_.cend(), mr, ReLineComment)) {
+      skip(mr, pos_, line_);
+    } else {
+      break;
     }
   }
 
@@ -43,6 +57,8 @@ Token Lexer::Read() {
   } else {
     cur_ = Token();
   }
+
+  // cout << "token: " << *cur_ << endl;
 
   return *cur_;
 }

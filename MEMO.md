@@ -7,7 +7,7 @@
   - ""
   - #f
   - #t
-  * #;
+  - #;
   x #! shebang
   x #x
   * #\, #\space, #\newline, #\return, #\null
