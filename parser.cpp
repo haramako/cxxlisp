@@ -38,8 +38,9 @@ Token::operator string() const {
 
 Token Parser::next() {
 
-  if (cur_.has_value()) {
-    return *cur_;
+  if (unreaded_) {
+    unreaded_ = false;
+    return cur_;
   }
 
   smatch mr;
@@ -88,10 +89,16 @@ Token Parser::next() {
 
   // cout << "token: " << *cur_ << endl;
 
-  return *cur_;
+  return cur_;
 }
 
-void Parser::consume() { cur_.reset(); }
+void Parser::unread() {
+  if (unreaded_) {
+    throw "Can't unread token.";
+  } else {
+    unreaded_ = true;
+  }
+}
 
 Value Cons(Value car, Value cdr) { return new Cell(car, cdr); }
 
@@ -99,15 +106,12 @@ Value Parser::Read() {
   Token t = next();
   switch (t.Type) {
   case TokenType::EOS:
-    consume();
     return NIL;
 
   case TokenType::NUMBER:
-    consume();
     return Value(t.Number);
 
   case TokenType::SYMBOL: {
-    consume();
     switch (t.Char) {
     case '(':
       return parseList();
@@ -127,10 +131,8 @@ Value Parser::Read() {
   }
 
   case TokenType::IDENT:
-    consume();
     return Value(vm_->Intern(t.Str));
   case TokenType::STRING:
-    consume();
     return Value(t.Str);
   }
   return NIL;
@@ -142,7 +144,6 @@ Value Parser::parseList() {
   for (;;) {
     auto t = next();
     if (t.Type == TokenType::SYMBOL && t.Char == ')') {
-      consume();
       // End of list (a b | )
       if (!head) {
         return NIL;
@@ -151,7 +152,6 @@ Value Parser::parseList() {
       }
     } else if (t.Type == TokenType::SYMBOL && t.Char == '.') {
       // Dot list (a | . b)
-      consume();
       if (!head) {
         throw "BUG";
       } else {
@@ -159,6 +159,8 @@ Value Parser::parseList() {
         return head;
       }
     } else {
+      unread();
+
       // Normal list element (a | b ...)
       if (!head) {
         head = new Cell();
@@ -176,7 +178,6 @@ Value Parser::parseList() {
 Value Parser::parseReadMacro() {
   auto t = next();
   if (t.Type == TokenType::IDENT) {
-    consume();
     if (t.Str == "f") {
       // #f
       return BOOL_F;

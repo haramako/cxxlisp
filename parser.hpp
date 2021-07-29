@@ -42,12 +42,13 @@ class Parser {
   VM *vm_;
 
   std::string s_;
-  std::optional<Token> cur_;
+  Token cur_;
+  bool unreaded_ = false;
   int line_ = 0;
   int pos_ = 0;
 
   Token next();
-  void consume();
+  void unread();
 
   Value parseList();
   Value parseReadMacro();
