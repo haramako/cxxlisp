@@ -1,5 +1,23 @@
 # cxxlisp
 
+# TODO
+
+- lexer
+  - ; コメント
+  - ""
+  - #f
+  - #t
+  * #;
+  x #! shebang
+  x #x
+  * #\, #\space, #\newline, #\return, #\null
+  x #""
+  - ' = quote
+  - ` = quasi-quote
+  - , = unquote
+  x リードマクロ
+
+
 # 基本方針
 
 - あくまでC++の勉強用なので、あまり凝らない！

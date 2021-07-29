@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "lexer.hpp"
 #include "value.hpp"
@@ -11,13 +10,15 @@ namespace cxxlisp {
 class VM;
 
 class Parser {
+  VM *vm_;
   Lexer lex_;
-  std::vector<Value> stack_;
+
+  Value parseList();
+  Value parseReadMacro();
 
 public:
-  Parser(std::string_view s) : lex_(s) {}
-  Value Read(VM &vm);
-  void Consume();
+  Parser(VM *vm, std::string_view s) : vm_(vm), lex_(s) {}
+  Value Read();
 };
 
 } // namespace cxxlisp

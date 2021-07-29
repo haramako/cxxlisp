@@ -10,10 +10,11 @@ namespace cxxlisp {
 using namespace std;
 
 enum class TokenType {
-  None,
-  Number,
-  Paren,
-  Symbol,
+  NONE,
+  NUMBER,
+  PAREN,
+  SYMBOL,
+  STRING,
 };
 
 class Token {
@@ -23,21 +24,24 @@ public:
   char Char;
   std::string Str;
 
-  Token() : Type(TokenType::None), Char('\0') {}
-  Token(int v) : Type(TokenType::Number), Number(v) {}
-  Token(char v) : Type(TokenType::Paren), Char(v) {}
-  Token(const std::string_view v) : Type(TokenType::Symbol), Str(v) {}
+  Token() : Type(TokenType::NONE), Char('\0') {}
+  Token(int v) : Type(TokenType::NUMBER), Number(v) {}
+  Token(char v) : Type(TokenType::PAREN), Char(v) {}
+  Token(const std::string_view v) : Type(TokenType::SYMBOL), Str(v) {}
+  Token(TokenType tt, const std::string_view v) : Type(tt), Str(v) {}
 
   operator std::string() const {
     switch (Type) {
-    case TokenType::None:
+    case TokenType::NONE:
       return std::string("#EOF");
-    case TokenType::Number:
+    case TokenType::NUMBER:
       return std::to_string(Number);
-    case TokenType::Paren:
+    case TokenType::PAREN:
       return std::string{Char};
-    case TokenType::Symbol:
+    case TokenType::SYMBOL:
       return Str;
+    case TokenType::STRING:
+      return '"' + Str + '"';
     default:
       throw "BUG";
     }

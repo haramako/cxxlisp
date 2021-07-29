@@ -2,12 +2,14 @@
 #include <regex>
 
 namespace cxxlisp {
+
 using namespace std;
 
 const static regex ReNumber(R"(^[0-9]+)");
-const static regex ReSymbol(R"(^[a-zA-Z_\-.][a-zA-Z1-9_\-.]*)");
-const static regex ReParens(R"(^[()\[\]{}])");
-const static regex ReSpaces(R"(^[\s]+)");
+const static regex ReSymbol(R"(^[a-zA-Z_\-+*/][a-zA-Z_\-+*/.1-9]*)");
+const static regex ReString(R"(^"([^"]*)\")");
+const static regex ReParens(R"(^[()\[\]{}.#\\'`,])");
+const static regex ReSpaces(R"(^([\s]+|;[^\n]*\n)+)");
 
 Token Lexer::Read() {
   if (cur_.has_value()) {
@@ -28,10 +30,13 @@ Token Lexer::Read() {
 
   if (regex_search(s_.cbegin() + pos_, s_.cend(), mr, ReNumber)) {
     pos_ += mr.length();
-    cur_ = Token((int)stoi(string(mr[0])));
+    cur_ = Token((int)stoi(mr[0]));
   } else if (regex_search(s_.cbegin() + pos_, s_.cend(), mr, ReSymbol)) {
     pos_ += mr.length();
     cur_ = Token(string(mr[0]));
+  } else if (regex_search(s_.cbegin() + pos_, s_.cend(), mr, ReString)) {
+    pos_ += mr.length();
+    cur_ = Token(TokenType::STRING, string(mr[1]));
   } else if (regex_search(s_.cbegin() + pos_, s_.cend(), mr, ReParens)) {
     pos_ += mr.length();
     cur_ = Token(string(mr[0])[0]);
