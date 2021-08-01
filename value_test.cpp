@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <string>
 
+#include "util.hpp"
 #include "value.hpp"
 #include "vm.hpp"
 
@@ -48,13 +49,12 @@ static Value func1(VM &vm, vint_t arg1) { return arg1; }
 TEST(ValueTest, Procedure) {
   VM vm;
 
-  auto proc0 = new Procedure(func0);
-  auto proc1 = new Procedure(func1);
+  auto proc0 = make_procedure(func0);
+  auto proc1 = make_procedure(func1);
 
-  // EXPECT_EQ(Value(func1), Value(func1));
-  // EXPECT_EQ(0, proc0->Arity());
-  // EXPECT_EQ(0, proc0->Func<0>()(vm));
+  EXPECT_EQ(0, proc0->Arity());
+  EXPECT_EQ(0, proc0->Call(vm, NIL));
 
-  // EXPECT_EQ(1, proc1->Arity());
-  // EXPECT_EQ(1, proc1->Func<1>()(vm, Value(1)));
+  EXPECT_EQ(1, proc1->Arity());
+  EXPECT_EQ(1, proc1->Call(vm, cons(1, NIL)));
 }

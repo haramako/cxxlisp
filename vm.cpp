@@ -85,7 +85,7 @@ Value Eval::doList(Value code) {
 
 Value Eval::call(Value proc_, Value args) {
   auto proc = proc_.AsProcedure();
-  return proc.func_(*vm_, args);
+  return proc.Call(*vm_, args);
 }
 
 Value Eval::Execute(Value code) { return doValue(code); }

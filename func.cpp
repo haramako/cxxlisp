@@ -1,23 +1,66 @@
+#include "util.hpp"
 #include "vm.hpp"
-#include <functional>
 
 namespace cxxlisp {
 
 using namespace std;
 
-static Value add(VM &vm, vint_t a, vint_t b) { return a + b; }
+template <typename T> T fold(Value list, T (*f)(T, T)) {
+  Value head = car(list);
+  Value rest = cdr(list);
+  T r = val_as<T>(head);
+  for (auto v : rest) {
+    r = f(r, val_as<T>(v));
+    rest = cdr(rest);
+  }
+  return r;
+}
 
-static Value sub(VM &vm, vint_t a, vint_t b) { return a - b; }
+template <typename T> T foldc(Value list, T (*f)(const T &, const T &)) {
+  Value head = car(list);
+  Value rest = cdr(list);
+  T r = val_as<const T &>(head);
+  for (auto v : rest) {
+    r = f(r, val_as<const T &>(v));
+    rest = cdr(rest);
+  }
+  return r;
+}
 
-static Value append(VM &vm, const string &a, const string &b) { return a + b; }
+static Value add(VM &vm, Value args) {
+  Value head = car(args);
+  if (head.Type() == ValueType::NUMBER) {
+    return fold<vint_t>(args, [](vint_t a, vint_t b) { return a + b; });
+  } else if (head.Type() == ValueType::STRING) {
+    return foldc<string>(
+        args, [](const string &a, const string &b) { return a + b; });
+  } else {
+    throw "BUG";
+  }
+}
 
-#define F(id, f) env.Set(vm.Intern(id), new Procedure(caller(f)));
+static Value sub(VM &vm, Value args) {
+  Value head = car(args);
+  Value rest = cdr(args);
+  if (head.Type() == ValueType::NUMBER) {
+    vint_t r = head.AsNumber();
+    for (auto v : rest) {
+      r -= v.AsNumber();
+      rest = cdr(rest);
+    }
+    return r;
+  } else {
+    throw "BUG";
+  }
+}
+
+#define F(id, f) env.Set(vm.Intern(id), make_procedure(f));
+#define FVARG(id, f) env.Set(vm.Intern(id), new Procedure(-1, f));
 
 void init_func(VM &vm) {
   auto &env = vm.RootEnv();
-  F("+", add);
-  F("-", sub);
-  F("append", append);
+  FVARG("+", add);
+  FVARG("-", sub);
 }
 
 } // namespace cxxlisp

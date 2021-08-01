@@ -37,9 +37,17 @@ Value run(VM &vm, string_view src) {
 
 TEST(EvalTest, Simple) {
   VM vm;
-  Value result = run(vm, "(+ 1 1)");
-  EXPECT_EQ(Value(2), result);
+  tuple<Value, const char *> tests[] = {
+      {1, "(+ 1)"}, // {expect, test}
+      {3, "(+ 1 2)"},
+      {6, "(+ 1 2 3)"},
+      {"a", R"((+ "a"))"},
+      {"ab", R"((+ "a" "b"))"},
+      {"abc", R"((+ "a" "b" "c"))"},
+  };
 
-  result = run(vm, R"((append "a" "b"))");
-  EXPECT_EQ(Value("ab"), result);
+  for (const auto &t : tests) {
+    Value result = run(vm, get<1>(t));
+    EXPECT_EQ(get<0>(t), result);
+  }
 }

@@ -30,3 +30,9 @@ target_link_libraries(testcxxlisp
   PRIVATE
   GTest::GTest
   GTest::Main)
+
+
+## target 'test'
+add_custom_target(test COMMAND ./testcxxlisp )
+add_dependencies(test testcxxlisp)
+   
