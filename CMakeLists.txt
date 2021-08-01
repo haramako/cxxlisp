@@ -9,6 +9,7 @@ find_package(GTest REQUIRED)
 project(cxxlisp)
 
 set(srcs
+  func.cpp
   value.cpp
   parser.cpp
   vm.cpp
@@ -17,7 +18,7 @@ set(srcs
 set(test_srcs
   value_test.cpp
   parser_test.cpp
-  vm.cpp)
+  vm_test.cpp)
   
 ## cxxlisp
 add_executable(cxxlisp main.cpp ${srcs})

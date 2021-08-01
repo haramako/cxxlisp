@@ -9,6 +9,10 @@ namespace cxxlisp {
 
 using namespace std;
 
+//===================================================================
+// Constants.
+//===================================================================
+
 Value NIL;
 Value BOOL_T = Value::CreateSpecial("#t");
 Value BOOL_F = Value::CreateSpecial("#f");
@@ -16,6 +20,19 @@ Value SYM_QUOTE = Value::CreateSpecial("quote");
 Value SYM_QUASIQUOTE = Value::CreateSpecial("quasiquote");
 Value SYM_UNQUOTE = Value::CreateSpecial("unquote");
 
+//===================================================================
+// Procedure
+//===================================================================
+
+void Procedure::check(int arity) const {
+  if (arity_ != arity) {
+    throw "Ariry mismatch";
+  }
+}
+
+//===================================================================
+// Value
+//===================================================================
 bool operator==(const Value &a, const Value &b) {
   if (a.Type() != b.Type()) {
     return false;
@@ -33,7 +50,7 @@ bool operator==(const Value &a, const Value &b) {
 
 const string &Value::AsString() const { return ref<StringValue>().Ref(); }
 
-const string Value::ToString(const VM &vm) const {
+const string Value::ToString(const VM *vm) const {
   switch (Type()) {
   case ValueType::NIL:
     return "()";
@@ -42,7 +59,10 @@ const string Value::ToString(const VM &vm) const {
   case ValueType::NUMBER:
     return to_string(AsNumber());
   case ValueType::ATOM:
-    return vm.AtomToString(AsAtom());
+    if (vm) {
+    } else {
+      return "";
+    }
   case ValueType::CELL: {
     auto *cur = &AsCell();
     string r = "(";
@@ -63,10 +83,14 @@ const string Value::ToString(const VM &vm) const {
   }
   case ValueType::STRING:
     return '"' + AsString() + '"';
+  case ValueType::PROCEDURE:
+    return "#<proc>";
   default:
     return "?";
   }
 }
+
+const string Value::ToString(const VM &vm) const { return ToString(&vm); }
 
 Value::Value(const std::string &v)
     : type_(ValueType::STRING),

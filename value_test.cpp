@@ -41,3 +41,20 @@ TEST(ValueTest, String) {
   EXPECT_NE(Value("hoge"), Value("fuga"));
   EXPECT_EQ("hoge", Value("hoge").AsString());
 }
+
+static Value func0(VM &vm) { return 0; }
+static Value func1(VM &vm, vint_t arg1) { return arg1; }
+
+TEST(ValueTest, Procedure) {
+  VM vm;
+
+  auto proc0 = new Procedure(func0);
+  auto proc1 = new Procedure(func1);
+
+  // EXPECT_EQ(Value(func1), Value(func1));
+  // EXPECT_EQ(0, proc0->Arity());
+  // EXPECT_EQ(0, proc0->Func<0>()(vm));
+
+  // EXPECT_EQ(1, proc1->Arity());
+  // EXPECT_EQ(1, proc1->Func<1>()(vm, Value(1)));
+}
