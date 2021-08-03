@@ -68,10 +68,7 @@ const string Value::ToString(const VM *vm) const {
   case ValueType::NUMBER:
     return to_string(AsNumber());
   case ValueType::ATOM:
-    if (vm) {
-    } else {
-      return "";
-    }
+    return vm->AtomToString(AsAtom());
   case ValueType::CELL: {
     auto *cur = &AsCell();
     string r = "(";

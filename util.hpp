@@ -12,6 +12,7 @@ namespace cxxlisp {
 template <typename T> inline T val_as(Value v);
 
 template <> inline vint_t val_as<vint_t>(Value v) { return v.AsNumber(); }
+template <> inline Atom val_as<Atom>(Value v) { return v.AsAtom(); }
 template <> inline const std::string &val_as<const std::string &>(Value v) {
   return v.AsString();
 }
@@ -65,7 +66,7 @@ template <typename... T> std::tuple<T...> uncons(Value pair) {
     pair = pair.AsCell().Cdr;
   }
   int i = n - 1;
-  return std::make_tuple(from_value<T>(vals[i--])...);
+  return std::make_tuple(val_as<T>(vals[i--])...);
 }
 
 /**

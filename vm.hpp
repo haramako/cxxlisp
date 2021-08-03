@@ -22,8 +22,12 @@ class Eval {
   VM *vm_;
   Env *env_;
 
+  Value doBegin(Value rest);
+  Value doDefine(Value rest);
+
   Value doValue(Value code);
   Value doList(Value code);
+  Value doForm(Value code);
   Value call(Value proc, Value args);
 
 public:
@@ -39,6 +43,9 @@ public:
   Compiler(VM *vm) : vm_(vm) {}
 };
 
+/**
+ * List Virtual Machine.
+ */
 class VM {
   std::unordered_map<std::string, Atom> atomKeyToId_;
   std::vector<std::string> atomIdToKey_;

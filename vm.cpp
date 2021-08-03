@@ -1,4 +1,5 @@
 #include "vm.hpp"
+#include "util.hpp"
 
 namespace cxxlisp {
 
@@ -34,7 +35,7 @@ bool Env::Get(Atom id, Value &result) const {
 
 Value Env::GetOr(Atom id, Value default_) const {
   Value r;
-  if (Get(id.Id(), r)) {
+  if (Get(id, r)) {
     return r;
   } else {
     return default_;
@@ -49,21 +50,35 @@ void Env::Set(Atom id, Value v) { map_[id.Id()] = v; }
 
 Eval::Eval(VM *vm) : vm_(vm) { env_ = new Env(vm, &vm->RootEnv()); }
 
+Value Eval::doBegin(Value rest) {
+  // cout << "run: " << rest << endl;
+  Value r = doValue(car(rest));
+  if (cdr(rest).IsNil()) {
+    return r;
+  } else {
+    return doBegin(cdr(rest));
+  }
+}
+
+Value Eval::doDefine(Value rest) {
+  auto [name, val] = uncons<Atom, Value>(rest);
+  vm_->RootEnv().Set(name, val);
+  return NIL;
+}
+
 Value Eval::doValue(Value code) {
   switch (code.Type()) {
   case ValueType::CELL: {
-    auto head = doValue(code.AsCell().Car);
-    auto rest = doList(code.AsCell().Cdr);
-    return call(head, rest);
+    return doForm(code);
   }
   case ValueType::ATOM: {
     Value found;
     if (env_->Get(code.AsAtom(), found)) {
       return found;
     } else {
-      cout << "*" << code.ToString(*vm_) << endl;
-      return code;
-      // throw "Not found.";
+      stringstream s;
+      s << "Symbol " << code << " not found.";
+      throw LispException(s.str());
     }
   }
   default:
@@ -79,7 +94,26 @@ Value Eval::doList(Value code) {
       throw "`code` in doList() must be cell";
     }
   } else {
-    return new Cell(doValue(code.AsCell().Car), doList(code.AsCell().Cdr));
+    return new Cell(doValue(car(code)), doList(cdr(code)));
+  }
+}
+
+Value Eval::doForm(Value code) {
+  Cell pair = code.AsCell();
+  Value head = pair.Car;
+  if (head.IsAtom()) {
+    Atom atom = head.AsAtom();
+    auto atom_name = vm_->AtomToString(atom);
+    if (atom_name == "begin") {
+      return doBegin(pair.Cdr);
+    } else if (atom_name == "define") {
+      return doDefine(pair.Cdr);
+    } else {
+      // Call procedure.
+      return call(doValue(head), doList(pair.Cdr));
+    }
+  } else {
+    throw LispException("Head of form must be a atom.");
   }
 }
 

@@ -46,6 +46,8 @@ TEST(EvalTest, Simple) {
       {"\"abc\"", R"((+ "a" "b" "c"))"},
       {"(1 . 2)", R"((cons 1 2))"},
       {"(1 2)", R"((list 1 2))"},
+      {"1", R"((begin (define x 1) x))"},
+      //{"(1 2)", R"((+ 1 "2"))"},
   };
 
   for (const auto &t : tests) {

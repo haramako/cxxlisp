@@ -51,7 +51,7 @@ class Atom {
   atom_id_t id_;
 
 public:
-  Atom(atom_id_t id) : id_(id) {}
+  explicit Atom(atom_id_t id) : id_(id) {}
   atom_id_t Id() { return id_; }
   const std::string &ToString();
 };
@@ -166,8 +166,7 @@ public:
 };
 
 inline std::ostream &operator<<(std::ostream &s, const Value &value) {
-  s << value.ToString();
-  return s;
+  return s << value.ToString();
 }
 
 bool operator==(const Value &a, const Value &b);
