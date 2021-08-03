@@ -45,7 +45,9 @@ class VM {
   Env rootEnv_;
 
 public:
-  VM() : rootEnv_(this, nullptr) {}
+  static VM *Default;
+
+  VM() : rootEnv_(this, nullptr) { Default = this; }
   VM(const VM &) = delete;
   VM &operator=(const VM &) = delete;
 

@@ -67,7 +67,7 @@ template <typename... T> std::tuple<T...> uncons(Value pair) {
  *   std::functional<Value(VM&,Value)> proc = ProcCaller(f);
  *
  *   proc.Arity(); // => 2
- *   proc.Call(vm, cons(1,"hoge")); // => 2
+ *   proc.Call(vm, cons(1,"hoge")); // => f(vm, t, "hoge")
  */
 template <typename... T> class ProcCaller {
   using FuncType = Value (*)(VM &, T...);
@@ -92,11 +92,21 @@ template <typename T> Procedure *make_procedure(T func) {
   return new Procedure(ProcCaller(func).Arity(), ProcCaller(func));
 }
 
+/**
+ * Iterator of cons list.
+ *
+ * Usage:
+ *   Value li = cons(1,2,3,4);
+ *   for(auto it: li){
+ *     ....
+ *   }
+ */
 class ListIterator {
   Cell *v_;
 
 public:
   ListIterator() : v_(nullptr) {}
+
   ListIterator(Value &v) {
     if (v.IsNil()) {
       v_ = nullptr;
@@ -104,7 +114,9 @@ public:
       v_ = &v.AsCell();
     }
   }
+
   Value operator*() { return v_->Car; }
+
   ListIterator &operator++() {
     if (v_->Cdr.IsNil()) {
       v_ = nullptr;
@@ -113,6 +125,7 @@ public:
     }
     return *this;
   }
+
   bool operator!=(const ListIterator &other) { return v_ != other.v_; }
 };
 

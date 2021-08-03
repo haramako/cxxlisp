@@ -54,6 +54,10 @@ static Value sub(VM &vm, Value args) {
   }
 }
 
+static Value list_(VM &vm, Value args) { return args; }
+
+static Value cons_(VM &vm, Value v1, Value v2) { return new Cell(v1, v2); }
+
 #define F(id, f) env.Set(vm.Intern(id), make_procedure(f));
 #define FVARG(id, f) env.Set(vm.Intern(id), new Procedure(-1, f));
 
@@ -61,6 +65,8 @@ void init_func(VM &vm) {
   auto &env = vm.RootEnv();
   FVARG("+", add);
   FVARG("-", sub);
+  F("cons", cons_);
+  FVARG("list", list_);
 }
 
 } // namespace cxxlisp

@@ -37,17 +37,19 @@ Value run(VM &vm, string_view src) {
 
 TEST(EvalTest, Simple) {
   VM vm;
-  tuple<Value, const char *> tests[] = {
-      {1, "(+ 1)"}, // {expect, test}
-      {3, "(+ 1 2)"},
-      {6, "(+ 1 2 3)"},
-      {"a", R"((+ "a"))"},
-      {"ab", R"((+ "a" "b"))"},
-      {"abc", R"((+ "a" "b" "c"))"},
+  tuple<const char *, const char *> tests[] = {
+      {"1", "(+ 1)"}, // {expect, test}
+      {"3", "(+ 1 2)"},
+      {"6", "(+ 1 2 3)"},
+      {"\"a\"", R"((+ "a"))"},
+      {"\"ab\"", R"((+ "a" "b"))"},
+      {"\"abc\"", R"((+ "a" "b" "c"))"},
+      {"(1 . 2)", R"((cons 1 2))"},
+      {"(1 2)", R"((list 1 2))"},
   };
 
   for (const auto &t : tests) {
     Value result = run(vm, get<1>(t));
-    EXPECT_EQ(get<0>(t), result);
+    EXPECT_EQ(get<0>(t), result.ToString());
   }
 }

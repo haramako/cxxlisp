@@ -90,4 +90,10 @@ Value Eval::call(Value proc_, Value args) {
 
 Value Eval::Execute(Value code) { return doValue(code); }
 
+//===================================================================
+// VM
+//===================================================================
+
+VM *VM::Default = nullptr;
+
 } // namespace cxxlisp

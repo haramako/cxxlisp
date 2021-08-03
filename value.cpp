@@ -20,6 +20,11 @@ Value SYM_QUOTE = Value::CreateSpecial("quote");
 Value SYM_QUASIQUOTE = Value::CreateSpecial("quasiquote");
 Value SYM_UNQUOTE = Value::CreateSpecial("unquote");
 
+const char *VALUE_TYPE_NAMES[] = {
+    "NIL",  "SPECIAL", "NUMBER",    "ATOM",
+    "CELL", "STRING",  "PROCEDURE", "CUSTOM_OBJECT",
+};
+
 //===================================================================
 // Procedure
 //===================================================================
@@ -51,6 +56,10 @@ bool operator==(const Value &a, const Value &b) {
 const string &Value::AsString() const { return ref<StringValue>().Ref(); }
 
 const string Value::ToString(const VM *vm) const {
+  if (vm == nullptr) {
+    vm = VM::Default;
+  }
+
   switch (Type()) {
   case ValueType::NIL:
     return "()";
