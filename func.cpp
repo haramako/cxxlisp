@@ -35,7 +35,7 @@ static Value add(VM &vm, Value args) {
     return foldc<string>(
         args, [](const string &a, const string &b) { return a + b; });
   } else {
-    throw "BUG";
+    throw BUG();
   }
 }
 
@@ -50,7 +50,7 @@ static Value sub(VM &vm, Value args) {
     }
     return r;
   } else {
-    throw "BUG";
+    throw BUG();
   }
 }
 

@@ -24,12 +24,24 @@ inline Value cdr(Value v) { return v.AsCell().Cdr; }
  * cons.
  *
  * Usage:
- * cons(a, b, c, d) => Value of (a b c d)
+ * cons(a, b, c, d) => Value of (a b c . d)
  */
-inline Value cons() { return NIL; }
+inline Value cons(Value v) { return v; }
 template <typename... REST> inline Value cons(Value v, REST... rest) {
   return new Cell(v, cons(rest...));
 }
+
+/**
+ * list.
+ *
+ * Usage:
+ * list(a, b, c, d) => Value of (a b c d)
+ */
+inline Value list() { return NIL; }
+template <typename... REST> inline Value list(Value v, REST... rest) {
+  return new Cell(v, list(rest...));
+}
+
 template <int I, int N, typename... T>
 void uncons_(std::tuple<T...> &r, Value head) {
   if (I < N) {
@@ -67,7 +79,7 @@ template <typename... T> std::tuple<T...> uncons(Value pair) {
  *   std::functional<Value(VM&,Value)> proc = ProcCaller(f);
  *
  *   proc.Arity(); // => 2
- *   proc.Call(vm, cons(1,"hoge")); // => f(vm, t, "hoge")
+ *   proc.Call(vm, list(1,"hoge")); // => f(vm, t, "hoge")
  */
 template <typename... T> class ProcCaller {
   using FuncType = Value (*)(VM &, T...);
@@ -96,7 +108,7 @@ template <typename T> Procedure *make_procedure(T func) {
  * Iterator of cons list.
  *
  * Usage:
- *   Value li = cons(1,2,3,4);
+ *   Value li = list(1,2,3,4);
  *   for(auto it: li){
  *     ....
  *   }

@@ -31,7 +31,7 @@ const char *VALUE_TYPE_NAMES[] = {
 
 void Procedure::check(int arity) const {
   if (arity_ != arity) {
-    throw "Ariry mismatch";
+    throw LispException("Ariry mismatch");
   }
 }
 

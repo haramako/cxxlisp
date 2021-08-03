@@ -34,3 +34,8 @@
 #
 /build
 .#*
+
+# GNU Global tag files
+GPATH
+GRTAGS
+GTAGS

@@ -1,6 +1,7 @@
 #include <regex>
 
 #include "parser.hpp"
+#include "util.hpp"
 #include "vm.hpp"
 
 namespace cxxlisp {
@@ -28,7 +29,7 @@ Token::operator string() const {
   case TokenType::STRING:
     return '"' + Str + '"';
   default:
-    throw "BUG";
+    throw BUG();
   }
 }
 
@@ -94,13 +95,11 @@ Token Parser::next() {
 
 void Parser::unread() {
   if (unreaded_) {
-    throw "Can't unread token.";
+    throw LispException("Can't unread token.");
   } else {
     unreaded_ = true;
   }
 }
-
-Value Cons(Value car, Value cdr) { return new Cell(car, cdr); }
 
 Value Parser::Read() {
   Token t = next();
@@ -118,15 +117,15 @@ Value Parser::Read() {
     case '#':
       return parseReadMacro();
     case '\'':
-      return Cons(SYM_QUOTE, Cons(Read(), NIL));
+      return list(SYM_QUOTE, Read());
     case '`':
-      return Cons(SYM_QUASIQUOTE, Cons(Read(), NIL));
+      return list(SYM_QUASIQUOTE, Read());
     case ',':
-      return Cons(SYM_UNQUOTE, Cons(Read(), NIL));
+      return list(SYM_UNQUOTE, Read());
     case ')':
     case '.':
     default:
-      throw "BUG";
+      throw BUG();
     }
   }
 
@@ -153,7 +152,7 @@ Value Parser::parseList() {
     } else if (t.Type == TokenType::SYMBOL && t.Char == '.') {
       // Dot list (a | . b)
       if (!head) {
-        throw "BUG";
+        throw BUG();
       } else {
         tail->Cdr = Read();
         return head;
@@ -185,10 +184,10 @@ Value Parser::parseReadMacro() {
       // #t
       return BOOL_T;
     } else {
-      throw "BUG";
+      throw BUG();
     }
   } else {
-    throw "BUG";
+    throw BUG();
   }
 }
 
