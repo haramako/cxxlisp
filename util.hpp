@@ -43,14 +43,6 @@ template <typename... REST> inline Value list(Value v, REST... rest) {
   return new Cell(v, list(rest...));
 }
 
-template <int I, int N, typename... T>
-void uncons_(std::tuple<T...> &r, Value head) {
-  if (I < N) {
-    set<I>(r, head.AsCell().Car);
-    uncons<I + 1, N>(r, head.AsCell().Cdr);
-  }
-}
-
 /**
  * uncons.
  *
@@ -64,6 +56,38 @@ template <typename... T> std::tuple<T...> uncons(Value pair) {
   for (int i = 0; i < n; i++) {
     vals[i] = pair.AsCell().Car;
     pair = pair.AsCell().Cdr;
+  }
+  int i = n - 1;
+  return std::make_tuple(val_as<T>(vals[i--])...);
+}
+
+template <int I, int N, typename... T>
+void uncons_rest_(std::tuple<T...> &r, Value head) {
+  if (I < N) {
+    set<I>(r, head);
+    uncons_rest_<I + 1, N>(r, head.AsCell().Cdr);
+  }
+}
+
+/**
+ * uncons.
+ *
+ * Usage:
+ *   uncons_rest<vint_t,vint_t,Value>(cons(1, 2, 3), 4); => std::tuple(1, 2,
+ * cons(3,4));
+ *
+ */
+template <typename... T> std::tuple<T...> uncons_rest(Value pair) {
+  const int n = sizeof...(T);
+  Value vals[n];
+  for (int i = 0; i < n; i++) {
+    if (i == n - 1) {
+      vals[i] = pair;
+      pair = pair.AsCell().Cdr;
+    } else {
+      vals[i] = pair.AsCell().Car;
+      pair = pair.AsCell().Cdr;
+    }
   }
   int i = n - 1;
   return std::make_tuple(val_as<T>(vals[i--])...);
@@ -83,7 +107,7 @@ template <typename... T> std::tuple<T...> uncons(Value pair) {
  *   proc.Call(vm, list(1,"hoge")); // => f(vm, t, "hoge")
  */
 template <typename... T> class ProcCaller {
-  using FuncType = Value (*)(VM &, T...);
+  using FuncType = Value (*)(Ctx &, T...);
   FuncType f_;
 
 public:
@@ -91,7 +115,7 @@ public:
 
   ProcCaller(FuncType f) : f_(f) {}
 
-  Value operator()(VM &vm, Value args) {
+  Value operator()(Ctx &vm, Value args) {
     Value vals[ARITY];
     spread(ARITY, vals, args);
     int i = ARITY;

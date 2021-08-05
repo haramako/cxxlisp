@@ -27,7 +27,7 @@ template <typename T> T foldc(Value list, T (*f)(const T &, const T &)) {
   return r;
 }
 
-static Value add(VM &vm, Value args) {
+static Value add(Ctx &ctx, Value args) {
   Value head = car(args);
   if (head.Type() == ValueType::NUMBER) {
     return fold<vint_t>(args, [](vint_t a, vint_t b) { return a + b; });
@@ -39,7 +39,7 @@ static Value add(VM &vm, Value args) {
   }
 }
 
-static Value sub(VM &vm, Value args) {
+static Value sub(Ctx &ctx, Value args) {
   Value head = car(args);
   Value rest = cdr(args);
   if (head.Type() == ValueType::NUMBER) {
@@ -54,9 +54,9 @@ static Value sub(VM &vm, Value args) {
   }
 }
 
-static Value list_(VM &vm, Value args) { return args; }
+static Value list_(Ctx &ctx, Value args) { return args; }
 
-static Value cons_(VM &vm, Value v1, Value v2) { return new Cell(v1, v2); }
+static Value cons_(Ctx &ctx, Value v1, Value v2) { return new Cell(v1, v2); }
 
 #define F(id, f) env.Set(vm.Intern(id), make_procedure(f));
 #define FVARG(id, f) env.Set(vm.Intern(id), new Procedure(-1, f));

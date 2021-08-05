@@ -2,7 +2,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "value.hpp"
+#include "errors.hpp"
 #include "vm.hpp"
 
 namespace cxxlisp {
@@ -29,9 +29,20 @@ const char *VALUE_TYPE_NAMES[] = {
 // Procedure
 //===================================================================
 
+Procedure::Procedure(Value params, Value body)
+    : isNative_(false), params_(params), body_(body) {}
+
 void Procedure::check(int arity) const {
   if (arity_ != arity) {
     throw LispException("Ariry mismatch");
+  }
+}
+
+Value Procedure::Call(Ctx &ctx, Value args) {
+  if (isNative_) {
+    return func_(ctx, args);
+  } else {
+    return NIL;
   }
 }
 

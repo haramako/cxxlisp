@@ -26,11 +26,12 @@ TEST(EnvTest, GetFromUpper) {
   EXPECT_EQ(1, env.GetOr(vm.Intern("upper")));
 }
 
-Value run(VM &vm, string_view src) {
+static Value run(VM &vm, string_view src) {
   init_func(vm);
   Eval eval{&vm};
   Parser parser{&vm, src};
   Value code = parser.Read();
+  // cout << "code " << code << endl;
   Value result = eval.Execute(code);
   return result;
 }
@@ -47,6 +48,11 @@ TEST(EvalTest, Simple) {
       {"(1 . 2)", R"((cons 1 2))"},
       {"(1 2)", R"((list 1 2))"},
       {"1", R"((begin (define x 1) x))"},
+      {"()", R"('())"},
+      {"1", R"((if #t 1 2))"},
+      {"2", R"((if #f 1 2))"},
+      {"2", R"((if '() 1 2))"},
+      {"2", R"((lambda (x) x))"},
       //{"(1 2)", R"((+ 1 "2"))"},
   };
 

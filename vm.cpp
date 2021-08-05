@@ -66,6 +66,20 @@ Value Eval::doDefine(Value rest) {
   return NIL;
 }
 
+Value Eval::doIf(Value rest) {
+  auto [cond, then, else_] = uncons_rest<Value, Value, Value>(rest);
+  Value v = doValue(cond);
+  if (v.Truthy()) {
+    return doValue(then);
+  } else {
+    return doBegin(else_);
+  }
+}
+
+Value Eval::doQuote(Value rest) { return car(rest); }
+
+Value Eval::doLambda(Value rest) { return new Procedure(car(rest), cdr(rest)); }
+
 Value Eval::doValue(Value code) {
   switch (code.Type()) {
   case ValueType::CELL: {
@@ -108,9 +122,19 @@ Value Eval::doForm(Value code) {
       return doBegin(pair.Cdr);
     } else if (atom_name == "define") {
       return doDefine(pair.Cdr);
+    } else if (atom_name == "if") {
+      return doIf(pair.Cdr);
+    } else if (atom_name == "lambda") {
+      return doLambda(pair.Cdr);
     } else {
       // Call procedure.
       return call(doValue(head), doList(pair.Cdr));
+    }
+  } else if (head.IsSpecial()) {
+    if (head == SYM_QUOTE) {
+      return doQuote(pair.Cdr);
+    } else {
+      throw LispException("Unknown special.");
     }
   } else {
     throw LispException("Head of form must be a atom.");
@@ -119,7 +143,7 @@ Value Eval::doForm(Value code) {
 
 Value Eval::call(Value proc_, Value args) {
   auto proc = proc_.AsProcedure();
-  return proc.Call(*vm_, args);
+  return proc.Call(*ctx_, args);
 }
 
 Value Eval::Execute(Value code) { return doValue(code); }

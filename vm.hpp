@@ -6,6 +6,14 @@
 
 namespace cxxlisp {
 
+class Env;
+class VM;
+
+struct Ctx {
+  VM *vm;
+  Env *env;
+};
+
 class Env {
   VM *vm_;
   Env *upper_;
@@ -21,9 +29,13 @@ public:
 class Eval {
   VM *vm_;
   Env *env_;
+  Ctx *ctx_;
 
   Value doBegin(Value rest);
   Value doDefine(Value rest);
+  Value doIf(Value rest);
+  Value doQuote(Value rest);
+  Value doLambda(Value rest);
 
   Value doValue(Value code);
   Value doList(Value code);

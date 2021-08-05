@@ -6,7 +6,8 @@
 #include <memory>
 #include <sstream>
 #include <string>
-#include <variant>
+
+#include "errors.hpp"
 
 namespace cxxlisp {
 
@@ -14,6 +15,7 @@ using atom_id_t = int;
 using vint_t = int;
 
 class VM;
+class Ctx;
 class CustomObject;
 class Cell;
 class StringValue;
@@ -26,26 +28,6 @@ extern Value BOOL_T;
 extern Value SYM_QUOTE;
 extern Value SYM_QUASIQUOTE;
 extern Value SYM_UNQUOTE;
-
-/**
- * Base class of lisp exceptions.
- */
-class LispException : public std::exception {
-  std::string msg_;
-
-public:
-  LispException(const char *msg) : msg_(msg) {}
-  LispException(const std::string_view msg) : msg_(msg) {}
-  const char *what() const noexcept override { return msg_.c_str(); }
-};
-
-/**
- * Base class of lisp exceptions.
- */
-class BUG : public LispException {
-public:
-  BUG() : LispException("BUG") {}
-};
 
 class Atom {
   atom_id_t id_;
@@ -65,6 +47,14 @@ enum class ValueType : uint8_t {
   STRING,
   PROCEDURE,
   CUSTOM_OBJECT,
+};
+
+enum class SpecialType {
+  IF,
+  QUOTE,
+  LAMBDA,
+  DEFINE,
+  BEGIN,
 };
 
 extern const char *VALUE_TYPE_NAMES[];
@@ -115,8 +105,8 @@ public:
   bool IsString() const { return type_ == ValueType::STRING; }
   bool IsProcedure() const { return type_ == ValueType::PROCEDURE; }
 
-  bool IsT() const { return this == &BOOL_T; }
-  bool IsF() const { return this == &BOOL_F; }
+  bool IsT() const { return *this == BOOL_T; }
+  bool IsF() const { return *this == BOOL_F; }
 
   bool Truthy() const { return !Falsy(); }
   bool Falsy() const { return type_ == ValueType::NIL || IsF(); }
@@ -214,17 +204,22 @@ inline void spread(int n, Value *vals, Value head) {
  * Procedure
  */
 class Procedure {
+  bool isNative_;
   int arity_;
-  std::function<Value(VM &, Value)> func_;
+  std::function<Value(Ctx &, Value)> func_;
+  Value params_;
+  Value body_;
 
   void check(int arity) const;
 
 public:
-  Procedure(int arity, std::function<Value(VM &, Value)> func)
-      : arity_(arity), func_(func) {}
+  Procedure(int arity, std::function<Value(Ctx &, Value)> func)
+      : isNative_(true), arity_(arity), func_(func) {}
+  Procedure(Value params, Value body);
 
+  bool IsNative() { return isNative_; }
   int Arity() const { return arity_; }
-  Value Call(VM &vm, Value args) { return func_(vm, args); }
+  Value Call(Ctx &ctx, Value args);
 };
 
 } // namespace cxxlisp

@@ -43,18 +43,19 @@ TEST(ValueTest, String) {
   EXPECT_EQ("hoge", Value("hoge").AsString());
 }
 
-static Value func0(VM &vm) { return 0; }
-static Value func1(VM &vm, vint_t arg1) { return arg1; }
+static Value func0(Ctx &ctx) { return 0; }
+static Value func1(Ctx &ctx, vint_t arg1) { return arg1; }
 
 TEST(ValueTest, Procedure) {
   VM vm;
+  Ctx ctx{&vm, &vm.RootEnv()};
 
   auto proc0 = make_procedure(func0);
   auto proc1 = make_procedure(func1);
 
   EXPECT_EQ(0, proc0->Arity());
-  EXPECT_EQ(0, proc0->Call(vm, NIL));
+  EXPECT_EQ(0, proc0->Call(ctx, NIL));
 
   EXPECT_EQ(1, proc1->Arity());
-  EXPECT_EQ(1, proc1->Call(vm, cons(1, NIL)));
+  EXPECT_EQ(1, proc1->Call(ctx, cons(1, NIL)));
 }
