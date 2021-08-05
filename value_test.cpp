@@ -54,8 +54,8 @@ TEST(ValueTest, Procedure) {
   auto proc1 = make_procedure(func1);
 
   EXPECT_EQ(0, proc0->Arity());
-  EXPECT_EQ(0, proc0->Call(ctx, NIL));
+  EXPECT_EQ(0, proc0->Func()(ctx, NIL));
 
   EXPECT_EQ(1, proc1->Arity());
-  EXPECT_EQ(1, proc1->Call(ctx, cons(1, NIL)));
+  EXPECT_EQ(1, proc1->Func()(ctx, cons(1, NIL)));
 }

@@ -213,13 +213,16 @@ class Procedure {
   void check(int arity) const;
 
 public:
-  Procedure(int arity, std::function<Value(Ctx &, Value)> func)
+  using func_t = std::function<Value(Ctx &, Value)>;
+  Procedure(int arity, func_t func)
       : isNative_(true), arity_(arity), func_(func) {}
   Procedure(Value params, Value body);
 
   bool IsNative() { return isNative_; }
   int Arity() const { return arity_; }
-  Value Call(Ctx &ctx, Value args);
+  func_t Func() const { return func_; }
+  Value Params() const { return params_; }
+  Value Body() const { return body_; }
 };
 
 } // namespace cxxlisp

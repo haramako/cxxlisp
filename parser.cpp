@@ -155,7 +155,12 @@ Value Parser::parseList() {
         throw BUG();
       } else {
         tail->Cdr = Read();
-        return head;
+        t = next();
+        if (t.Type == TokenType::SYMBOL && t.Char == ')') {
+          return head;
+        } else {
+          throw LispException("Expect ')'.");
+        }
       }
     } else {
       unread();

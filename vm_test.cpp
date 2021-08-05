@@ -26,7 +26,8 @@ TEST(EnvTest, GetFromUpper) {
   EXPECT_EQ(1, env.GetOr(vm.Intern("upper")));
 }
 
-static Value run(VM &vm, string_view src) {
+static Value run(string_view src) {
+  VM vm;
   init_func(vm);
   Eval eval{&vm};
   Parser parser{&vm, src};
@@ -37,9 +38,9 @@ static Value run(VM &vm, string_view src) {
 }
 
 TEST(EvalTest, Simple) {
-  VM vm;
   tuple<const char *, const char *> tests[] = {
-      {"1", "(+ 1)"}, // {expect, test}
+      // {expect, test}
+      {"1", "(+ 1)"},
       {"3", "(+ 1 2)"},
       {"6", "(+ 1 2 3)"},
       {"\"a\"", R"((+ "a"))"},
@@ -52,12 +53,13 @@ TEST(EvalTest, Simple) {
       {"1", R"((if #t 1 2))"},
       {"2", R"((if #f 1 2))"},
       {"2", R"((if '() 1 2))"},
-      {"2", R"((lambda (x) x))"},
-      //{"(1 2)", R"((+ 1 "2"))"},
+      {"1", R"(((lambda (x) x) 1))"},
+      {"(1 2)", R"(((lambda x x) 1 2))"},
+      {"(1 (2 3))", R"(((lambda (x . y) (list x y)) 1 2 3))"},
   };
 
   for (const auto &t : tests) {
-    Value result = run(vm, get<1>(t));
+    Value result = run(get<1>(t));
     EXPECT_EQ(get<0>(t), result.ToString());
   }
 }

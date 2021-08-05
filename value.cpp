@@ -38,14 +38,6 @@ void Procedure::check(int arity) const {
   }
 }
 
-Value Procedure::Call(Ctx &ctx, Value args) {
-  if (isNative_) {
-    return func_(ctx, args);
-  } else {
-    return NIL;
-  }
-}
-
 //===================================================================
 // Value
 //===================================================================

@@ -24,11 +24,12 @@ public:
   bool Get(Atom id, Value &result) const;
   Value GetOr(Atom id, Value default_ = NIL) const;
   void Set(Atom id, Value v);
+
+  int Count() { return map_.size(); }
 };
 
 class Eval {
   VM *vm_;
-  Env *env_;
   Ctx *ctx_;
 
   Value doBegin(Value rest);
