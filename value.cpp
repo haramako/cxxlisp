@@ -16,9 +16,9 @@ using namespace std;
 Value NIL;
 Value BOOL_T = Value::CreateSpecial("#t");
 Value BOOL_F = Value::CreateSpecial("#f");
-Value SYM_QUOTE = Value::CreateSpecial("quote");
-Value SYM_QUASIQUOTE = Value::CreateSpecial("quasiquote");
-Value SYM_UNQUOTE = Value::CreateSpecial("unquote");
+Value SYM_QUOTE = Value::CreateSpecialForm(SpecialForm::QUOTE);
+Value SYM_QUASIQUOTE = Value::CreateSpecialForm(SpecialForm::QUASIQUOTE);
+Value SYM_UNQUOTE = Value::CreateSpecialForm(SpecialForm::UNQUOTE);
 
 const char *VALUE_TYPE_NAMES[] = {
     "NIL",  "SPECIAL", "NUMBER",    "ATOM",
@@ -28,15 +28,6 @@ const char *VALUE_TYPE_NAMES[] = {
 //===================================================================
 // Procedure
 //===================================================================
-
-Procedure::Procedure(Value params, Value body)
-    : isNative_(false), params_(params), body_(body) {}
-
-void Procedure::check(int arity) const {
-  if (arity_ != arity) {
-    throw LispException("Ariry mismatch");
-  }
-}
 
 //===================================================================
 // Value

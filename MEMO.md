@@ -52,18 +52,18 @@ custom object
 
 # basic form
 
-define
-set!
-let
+- define
+* set!
+* let
 
-lambda
+- lambda
 
-if
-cond(else,=>)
+- if
+* cond(else,=>)
 
-define-macro
-macro-expand
-macro-expand1
+* define-macro
+* macro-expand
+* macro-expand1
 
 # 関数
 
@@ -108,6 +108,7 @@ macro-expand1
 - モジュールシステム
 - 簡易lambdaの@1とか
   - (lambda (a b) (+ a b))
+  - (^ (a b) (+ a b))
   - (^ (+ @1 @2))
   - {+ @1 @2}
 

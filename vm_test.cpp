@@ -56,6 +56,7 @@ TEST(EvalTest, Simple) {
       {"1", R"(((lambda (x) x) 1))"},
       {"(1 2)", R"(((lambda x x) 1 2))"},
       {"(1 (2 3))", R"(((lambda (x . y) (list x y)) 1 2 3))"},
+      {"1", R"((begin (define x 1) ((lambda () x))))"},
   };
 
   for (const auto &t : tests) {

@@ -5,18 +5,6 @@ namespace cxxlisp {
 
 using namespace std;
 
-Atom VM::Intern(const char *v) {
-  auto it = atomKeyToId_.find(v);
-  if (it != atomKeyToId_.end()) {
-    return Atom(it->second);
-  } else {
-    int new_id = (int)atomKeyToId_.size();
-    atomKeyToId_.insert(make_pair(string(v), new_id));
-    atomIdToKey_.emplace_back(string(v));
-    return Atom(new_id);
-  }
-}
-
 //===================================================================
 // Env
 //===================================================================
@@ -119,28 +107,24 @@ Value Eval::doForm(Value code) {
   Value head = pair.Car;
   if (head.IsAtom()) {
     Atom atom = head.AsAtom();
-    auto atom_name = vm_->AtomToString(atom);
-    if (atom_name == "begin") {
+    SpecialForm atom_id = (SpecialForm)atom.Id();
+    switch (atom_id) {
+    case SpecialForm::BEGIN:
       return doBegin(pair.Cdr);
-    } else if (atom_name == "define") {
+    case SpecialForm::DEFINE:
       return doDefine(pair.Cdr);
-    } else if (atom_name == "if") {
+    case SpecialForm::IF:
       return doIf(pair.Cdr);
-    } else if (atom_name == "lambda") {
+    case SpecialForm::LAMBDA:
       return doLambda(pair.Cdr);
-    } else {
+    case SpecialForm::QUOTE:
+      return doQuote(pair.Cdr);
+    default:
       // Call procedure.
       return call(doValue(head), doList(pair.Cdr));
     }
-  } else if (head.IsSpecial()) {
-    if (head == SYM_QUOTE) {
-      return doQuote(pair.Cdr);
-    } else {
-      throw LispException("Unknown special.");
-    }
   } else {
     return call(doValue(head), doList(pair.Cdr));
-    // throw LispException("Head of form must be a atom.");
   }
 }
 
@@ -178,6 +162,32 @@ Value Eval::Execute(Value code) { return doValue(code); }
 //===================================================================
 // VM
 //===================================================================
+
+VM::VM() : rootEnv_(this, nullptr) {
+  Default = this;
+
+  Intern("begin");
+  Intern("define");
+  Intern("if");
+  Intern("lambda");
+  Intern("quote");
+  Intern("quasiquote");
+  Intern("unquote");
+
+  // cout << Intern("quote").Id() << " " << (int)SpecialForm::QUOTE << endl;
+}
+
+Atom VM::Intern(const char *v) {
+  auto it = atomKeyToId_.find(v);
+  if (it != atomKeyToId_.end()) {
+    return Atom(it->second);
+  } else {
+    int new_id = (int)atomKeyToId_.size();
+    atomKeyToId_.insert(make_pair(string(v), new_id));
+    atomIdToKey_.emplace_back(string(v));
+    return Atom(new_id);
+  }
+}
 
 VM *VM::Default = nullptr;
 

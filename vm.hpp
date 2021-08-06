@@ -64,10 +64,12 @@ class VM {
   std::vector<std::string> atomIdToKey_;
   Env rootEnv_;
 
+  void init();
+
 public:
   static VM *Default;
 
-  VM() : rootEnv_(this, nullptr) { Default = this; }
+  VM();
   VM(const VM &) = delete;
   VM &operator=(const VM &) = delete;
 

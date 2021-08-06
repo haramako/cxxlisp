@@ -57,6 +57,16 @@ enum class SpecialType {
   BEGIN,
 };
 
+enum class SpecialForm {
+  BEGIN = 0,
+  DEFINE,
+  IF,
+  LAMBDA,
+  QUOTE,
+  QUASIQUOTE,
+  UNQUOTE,
+};
+
 extern const char *VALUE_TYPE_NAMES[];
 
 inline const char *to_str(ValueType v) { return VALUE_TYPE_NAMES[(int)v]; }
@@ -153,6 +163,10 @@ public:
     return Value(ValueType::SPECIAL,
                  reinterpret_cast<uintptr_t>(new std::string(name)));
   }
+
+  static Value CreateSpecialForm(SpecialForm sf) {
+    return Value(ValueType::ATOM, (uintptr_t)sf);
+  }
 };
 
 inline std::ostream &operator<<(std::ostream &s, const Value &value) {
@@ -204,19 +218,19 @@ inline void spread(int n, Value *vals, Value head) {
  * Procedure
  */
 class Procedure {
+  using func_t = std::function<Value(Ctx &, Value)>;
+
   bool isNative_;
   int arity_;
-  std::function<Value(Ctx &, Value)> func_;
+  func_t func_;
   Value params_;
   Value body_;
 
-  void check(int arity) const;
-
 public:
-  using func_t = std::function<Value(Ctx &, Value)>;
   Procedure(int arity, func_t func)
       : isNative_(true), arity_(arity), func_(func) {}
-  Procedure(Value params, Value body);
+  Procedure(Value params, Value body)
+      : isNative_(false), params_(params), body_(body) {}
 
   bool IsNative() { return isNative_; }
   int Arity() const { return arity_; }
