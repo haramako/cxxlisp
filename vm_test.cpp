@@ -29,11 +29,10 @@ TEST(EnvTest, GetFromUpper) {
 static Value run(string_view src) {
   VM vm;
   init_func(vm);
-  Eval eval{&vm};
   Parser parser{&vm, src};
   Value code = parser.Read();
   // cout << "code " << code << endl;
-  Value result = eval.Execute(code);
+  Value result = Eval().Execute(vm, code);
   return result;
 }
 

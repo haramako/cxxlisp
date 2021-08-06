@@ -29,24 +29,21 @@ public:
 };
 
 class Eval {
-  VM *vm_;
-  Ctx *ctx_;
+  Value doBegin(Ctx &ctx, Value rest);
+  Value doDefine(Ctx &ctx, Value rest);
+  Value doIf(Ctx &ctx, Value rest);
+  Value doQuote(Ctx &ctx, Value rest);
+  Value doLambda(Ctx &ctx, Value rest);
 
-  Value doBegin(Value rest);
-  Value doDefine(Value rest);
-  Value doIf(Value rest);
-  Value doQuote(Value rest);
-  Value doLambda(Value rest);
-
-  Value doValue(Value code);
-  Value doList(Value code);
-  Value doForm(Value code);
-  Value call(Value proc, Value args);
+  Value doValue(Ctx &ctx, Value code);
+  Value doList(Ctx &ctx, Value code);
+  Value doForm(Ctx &ctx, Value code);
+  Value call(Ctx &ctx, Value proc, Value args);
 
 public:
-  Eval(VM *vm);
+  Eval(){};
 
-  Value Execute(Value code);
+  Value Execute(VM &vm, Value code);
 };
 
 class Compiler {

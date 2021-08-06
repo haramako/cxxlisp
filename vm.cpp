@@ -36,48 +36,46 @@ void Env::Set(Atom id, Value v) { map_[id.Id()] = v; }
 // Eval
 //===================================================================
 
-Eval::Eval(VM *vm) : vm_(vm) {
-  ctx_ = new Ctx{vm, new Env(vm, &vm->RootEnv())};
-}
-
-Value Eval::doBegin(Value rest) {
+Value Eval::doBegin(Ctx &ctx, Value rest) {
   // cout << "run: " << car(rest) << endl;
-  Value r = doValue(car(rest));
+  Value r = doValue(ctx, car(rest));
   if (cdr(rest).IsNil()) {
     return r;
   } else {
-    return doBegin(cdr(rest));
+    return doBegin(ctx, cdr(rest));
   }
 }
 
-Value Eval::doDefine(Value rest) {
+Value Eval::doDefine(Ctx &ctx, Value rest) {
   auto [name, val] = uncons<Atom, Value>(rest);
-  vm_->RootEnv().Set(name, val);
+  ctx.vm->RootEnv().Set(name, val);
   return NIL;
 }
 
-Value Eval::doIf(Value rest) {
+Value Eval::doIf(Ctx &ctx, Value rest) {
   auto [cond, then, else_] = uncons_rest<Value, Value, Value>(rest);
-  Value v = doValue(cond);
+  Value v = doValue(ctx, cond);
   if (v.Truthy()) {
-    return doValue(then);
+    return doValue(ctx, then);
   } else {
-    return doBegin(else_);
+    return doBegin(ctx, else_);
   }
 }
 
-Value Eval::doQuote(Value rest) { return car(rest); }
+Value Eval::doQuote(Ctx &ctx, Value rest) { return car(rest); }
 
-Value Eval::doLambda(Value rest) { return new Procedure(car(rest), cdr(rest)); }
+Value Eval::doLambda(Ctx &ctx, Value rest) {
+  return new Procedure(car(rest), cdr(rest));
+}
 
-Value Eval::doValue(Value code) {
+Value Eval::doValue(Ctx &ctx, Value code) {
   switch (code.Type()) {
   case ValueType::CELL: {
-    return doForm(code);
+    return doForm(ctx, code);
   }
   case ValueType::ATOM: {
     Value found;
-    if (ctx_->env->Get(code.AsAtom(), found)) {
+    if (ctx.env->Get(code.AsAtom(), found)) {
       return found;
     } else {
       stringstream s;
@@ -90,7 +88,7 @@ Value Eval::doValue(Value code) {
   }
 }
 
-Value Eval::doList(Value code) {
+Value Eval::doList(Ctx &ctx, Value code) {
   if (code.Type() != ValueType::CELL) {
     if (code.IsNil()) {
       return NIL;
@@ -98,47 +96,40 @@ Value Eval::doList(Value code) {
       throw "`code` in doList() must be cell";
     }
   } else {
-    return new Cell(doValue(car(code)), doList(cdr(code)));
+    return new Cell(doValue(ctx, car(code)), doList(ctx, cdr(code)));
   }
 }
 
-Value Eval::doForm(Value code) {
+Value Eval::doForm(Ctx &ctx, Value code) {
   Cell pair = code.AsCell();
   Value head = pair.Car;
   if (head.IsAtom()) {
-    Atom atom = head.AsAtom();
-    SpecialForm atom_id = (SpecialForm)atom.Id();
+    SpecialForm atom_id = (SpecialForm)head.AsAtom().Id();
     switch (atom_id) {
     case SpecialForm::BEGIN:
-      return doBegin(pair.Cdr);
+      return doBegin(ctx, pair.Cdr);
     case SpecialForm::DEFINE:
-      return doDefine(pair.Cdr);
+      return doDefine(ctx, pair.Cdr);
     case SpecialForm::IF:
-      return doIf(pair.Cdr);
+      return doIf(ctx, pair.Cdr);
     case SpecialForm::LAMBDA:
-      return doLambda(pair.Cdr);
+      return doLambda(ctx, pair.Cdr);
     case SpecialForm::QUOTE:
-      return doQuote(pair.Cdr);
-    default:
-      // Call procedure.
-      return call(doValue(head), doList(pair.Cdr));
+      return doQuote(ctx, pair.Cdr);
     }
-  } else {
-    return call(doValue(head), doList(pair.Cdr));
   }
+  return call(ctx, doValue(ctx, head), doList(ctx, pair.Cdr));
 }
 
-Value Eval::call(Value proc_, Value args) {
+Value Eval::call(Ctx &ctx, Value proc_, Value args) {
   auto proc = proc_.AsProcedure();
   if (proc.IsNative()) {
     // Call native procecure.
-    return proc.Func()(*ctx_, args);
+    return proc.Func()(ctx, args);
   } else {
     // Call lisp procedure.
-    Env *new_env = new Env(ctx_->vm, ctx_->env);
-    Ctx *new_ctx = new Ctx{ctx_->vm, new_env};
-    Ctx *old_ctx = ctx_;
-    ctx_ = new_ctx;
+    Env *new_env = new Env(ctx.vm, ctx.env);
+    Ctx new_ctx{ctx.vm, new_env};
 
     // Setup arguments.
     for (Value a = args, p = proc.Params(); !p.IsNil();
@@ -151,13 +142,15 @@ Value Eval::call(Value proc_, Value args) {
       }
     }
 
-    Value result = doBegin(proc.Body());
-    ctx_ = old_ctx;
+    Value result = doBegin(new_ctx, proc.Body());
     return result;
   }
 }
 
-Value Eval::Execute(Value code) { return doValue(code); }
+Value Eval::Execute(VM &vm, Value code) {
+  Ctx ctx{&vm, &vm.RootEnv()};
+  return doValue(ctx, code);
+}
 
 //===================================================================
 // VM
