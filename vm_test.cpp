@@ -26,12 +26,38 @@ TEST(EnvTest, GetFromUpper) {
   EXPECT_EQ(1, env.GetOr(vm.Intern("upper")));
 }
 
-static Value run(string_view src) {
-  VM vm;
+static Value compile(VM &vm, string_view src) {
   init_func(vm);
   Parser parser{&vm, src};
   Value code = parser.Read();
   // cout << "code " << code << endl;
+  Value result = Compiler().Compile(vm, code);
+  return result;
+}
+
+TEST(CompilerTest, Simple) {
+  tuple<const char *, const char *> tests[] = {
+      // {expect, test}
+      {"1", "1"},
+      {"(if 1 2 3)", "(if 1 2 3)"},
+      {"(if 1 2 #undef)", "(if 1 2)"},
+      {"(define x 1)", "(define x 1)"},
+      {"(define f (lambda (x) x))", "(define (f (x) x))"},
+  };
+
+  for (const auto &t : tests) {
+    VM vm;
+    Value result = compile(vm, get<1>(t));
+    EXPECT_EQ(string(get<0>(t)), result.ToString());
+  }
+}
+
+static Value run(VM &vm, string_view src) {
+  init_func(vm);
+  Parser parser{&vm, src};
+  Value code = parser.Read();
+  // cout << "code " << code << endl;
+  code = Compiler().Compile(vm, code);
   Value result = Eval().Execute(vm, code);
   return result;
 }
@@ -59,7 +85,8 @@ TEST(EvalTest, Simple) {
   };
 
   for (const auto &t : tests) {
-    Value result = run(get<1>(t));
+    VM vm;
+    Value result = run(vm, get<1>(t));
     EXPECT_EQ(get<0>(t), result.ToString());
   }
 }

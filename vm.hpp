@@ -28,6 +28,27 @@ public:
   int Count() { return map_.size(); }
 };
 
+/**
+ * Compiler.
+ *
+ * Macro processor.
+ */
+class Compiler {
+  Value doBegin(Ctx &ctx, Value rest);
+  Value doDefine(Ctx &ctx, Value rest);
+  Value doIf(Ctx &ctx, Value rest);
+  Value doQuote(Ctx &ctx, Value rest);
+  Value doLambda(Ctx &ctx, Value rest);
+
+  Value doValue(Ctx &ctx, Value code);
+  Value doList(Ctx &ctx, Value code);
+  Value doForm(Ctx &ctx, Value code);
+
+public:
+  Compiler() {}
+  Value Compile(VM &vm, Value code);
+};
+
 class Eval {
   Value doBegin(Ctx &ctx, Value rest);
   Value doDefine(Ctx &ctx, Value rest);
@@ -44,13 +65,6 @@ public:
   Eval(){};
 
   Value Execute(VM &vm, Value code);
-};
-
-class Compiler {
-  VM *vm_;
-
-public:
-  Compiler(VM *vm) : vm_(vm) {}
 };
 
 /**

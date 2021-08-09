@@ -61,14 +61,6 @@ template <typename... T> std::tuple<T...> uncons(Value pair) {
   return std::make_tuple(val_as<T>(vals[i--])...);
 }
 
-template <int I, int N, typename... T>
-void uncons_rest_(std::tuple<T...> &r, Value head) {
-  if (I < N) {
-    set<I>(r, head);
-    uncons_rest_<I + 1, N>(r, head.AsCell().Cdr);
-  }
-}
-
 /**
  * uncons.
  *
@@ -83,7 +75,6 @@ template <typename... T> std::tuple<T...> uncons_rest(Value pair) {
   for (int i = 0; i < n; i++) {
     if (i == n - 1) {
       vals[i] = pair;
-      pair = pair.AsCell().Cdr;
     } else {
       vals[i] = pair.AsCell().Car;
       pair = pair.AsCell().Cdr;

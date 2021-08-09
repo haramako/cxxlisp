@@ -33,6 +33,90 @@ Value Env::GetOr(Atom id, Value default_) const {
 void Env::Set(Atom id, Value v) { map_[id.Id()] = v; }
 
 //===================================================================
+// Compiler
+//===================================================================
+
+Value Compiler::doBegin(Ctx &ctx, Value rest) {
+  // cout << "run: " << car(rest) << endl;
+  if (rest.IsNil()) {
+    return NIL;
+  } else {
+    return cons(doValue(ctx, car(rest)), doBegin(ctx, cdr(rest)));
+  }
+}
+
+Value Compiler::doDefine(Ctx &ctx, Value rest) {
+  Value name = car(rest);
+  if (name.IsCell()) {
+    return list(car(name), doValue(ctx, cons(SYM_LAMBDA, cdr(name))));
+  } else {
+    return rest;
+  }
+}
+
+Value Compiler::doIf(Ctx &ctx, Value rest) {
+  auto [cond, then, else_] = uncons_rest<Value, Value, Value>(rest);
+  if (else_.IsNil()) {
+    else_ = list(UNDEF);
+  }
+  return cons(doValue(ctx, cond), doValue(ctx, then), else_);
+}
+
+Value Compiler::doQuote(Ctx &ctx, Value rest) { return car(rest); }
+
+Value Compiler::doLambda(Ctx &ctx, Value rest) {
+  return cons(car(rest), doBegin(ctx, cdr(rest)));
+}
+
+Value Compiler::doValue(Ctx &ctx, Value code) {
+  switch (code.Type()) {
+  case ValueType::CELL: {
+    return doForm(ctx, code);
+  }
+  default:
+    return code;
+  }
+}
+
+Value Compiler::doList(Ctx &ctx, Value code) {
+  if (code.Type() != ValueType::CELL) {
+    if (code.IsNil()) {
+      return NIL;
+    } else {
+      throw LispException("`code` in doList() must be cell");
+    }
+  } else {
+    return cons(doValue(ctx, car(code)), doList(ctx, cdr(code)));
+  }
+}
+
+Value Compiler::doForm(Ctx &ctx, Value code) {
+  Cell pair = code.AsCell();
+  Value head = pair.Car;
+  if (head.IsAtom()) {
+    SpecialForm atom_id = (SpecialForm)head.AsAtom().Id();
+    switch (atom_id) {
+    case SpecialForm::BEGIN:
+      return cons(head, doBegin(ctx, pair.Cdr));
+    case SpecialForm::DEFINE:
+      return cons(head, doDefine(ctx, pair.Cdr));
+    case SpecialForm::IF:
+      return cons(head, doIf(ctx, pair.Cdr));
+    case SpecialForm::LAMBDA:
+      return cons(head, doLambda(ctx, pair.Cdr));
+    case SpecialForm::QUOTE:
+      return code;
+    }
+  }
+  return cons(head, doList(ctx, pair.Cdr));
+}
+
+Value Compiler::Compile(VM &vm, Value code) {
+  Ctx ctx{&vm, &vm.RootEnv()};
+  return doValue(ctx, code);
+}
+
+//===================================================================
 // Eval
 //===================================================================
 

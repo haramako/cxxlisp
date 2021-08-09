@@ -16,9 +16,11 @@ using namespace std;
 Value NIL;
 Value BOOL_T = Value::CreateSpecial("#t");
 Value BOOL_F = Value::CreateSpecial("#f");
+Value UNDEF = Value::CreateSpecial("#undef");
 Value SYM_QUOTE = Value::CreateSpecialForm(SpecialForm::QUOTE);
 Value SYM_QUASIQUOTE = Value::CreateSpecialForm(SpecialForm::QUASIQUOTE);
 Value SYM_UNQUOTE = Value::CreateSpecialForm(SpecialForm::UNQUOTE);
+Value SYM_LAMBDA = Value::CreateSpecialForm(SpecialForm::LAMBDA);
 
 const char *VALUE_TYPE_NAMES[] = {
     "NIL",  "SPECIAL", "NUMBER",    "ATOM",

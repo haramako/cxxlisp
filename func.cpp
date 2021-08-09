@@ -16,7 +16,7 @@ template <typename T> T fold(Value list, T (*f)(T, T)) {
   return r;
 }
 
-template <typename T> T foldc(Value list, T (*f)(const T &, const T &)) {
+template <typename T> T fold(Value list, T (*f)(const T &, const T &)) {
   Value head = car(list);
   Value rest = cdr(list);
   T r = val_as<const T &>(head);
@@ -32,8 +32,8 @@ static Value add(Ctx &ctx, Value args) {
   if (head.Type() == ValueType::NUMBER) {
     return fold<vint_t>(args, [](vint_t a, vint_t b) { return a + b; });
   } else if (head.Type() == ValueType::STRING) {
-    return foldc<string>(
-        args, [](const string &a, const string &b) { return a + b; });
+    return fold<string>(args,
+                        [](const string &a, const string &b) { return a + b; });
   } else {
     throw BUG();
   }

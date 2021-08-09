@@ -25,9 +25,11 @@ class Value;
 extern Value NIL;
 extern Value BOOL_F;
 extern Value BOOL_T;
+extern Value UNDEF;
 extern Value SYM_QUOTE;
 extern Value SYM_QUASIQUOTE;
 extern Value SYM_UNQUOTE;
+extern Value SYM_LAMBDA;
 
 class Atom {
   atom_id_t id_;
