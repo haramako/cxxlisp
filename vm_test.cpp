@@ -48,7 +48,7 @@ TEST(CompilerTest, Simple) {
   for (const auto &t : tests) {
     VM vm;
     Value result = compile(vm, get<1>(t));
-    EXPECT_EQ(string(get<0>(t)), result.ToString());
+    EXPECT_EQ(string(get<0>(t)), result.ToString(vm));
   }
 }
 

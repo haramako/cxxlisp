@@ -160,4 +160,9 @@ public:
 inline ListIterator begin(Value &v) { return ListIterator(v); }
 inline ListIterator end(Value &v) { return ListIterator(); }
 
+// pretty_print.cpp
+const int PRETTY_PRINT_DEFAULT_LEN = 256;
+std::ostream &pretty_print(std::ostream &os, Value v,
+                           int len = PRETTY_PRINT_DEFAULT_LEN);
+
 } // namespace cxxlisp

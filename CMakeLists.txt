@@ -12,6 +12,7 @@ set(srcs
   func.cpp
   value.cpp
   parser.cpp
+  pretty_print.cpp
   vm.cpp
   )
 

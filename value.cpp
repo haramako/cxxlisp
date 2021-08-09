@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "errors.hpp"
+#include "util.hpp"
 #include "vm.hpp"
 
 namespace cxxlisp {
@@ -52,44 +53,9 @@ bool operator==(const Value &a, const Value &b) {
 const string &Value::AsString() const { return ref<StringValue>().Ref(); }
 
 const string Value::ToString(const VM *vm) const {
-  if (vm == nullptr) {
-    vm = VM::Default;
-  }
-
-  switch (Type()) {
-  case ValueType::NIL:
-    return "()";
-  case ValueType::SPECIAL:
-    return AsSpecial();
-  case ValueType::NUMBER:
-    return to_string(AsNumber());
-  case ValueType::ATOM:
-    return vm->AtomToString(AsAtom());
-  case ValueType::CELL: {
-    auto *cur = &AsCell();
-    string r = "(";
-    for (;;) {
-      if (cur->Cdr.IsCell()) {
-        r += cur->Car.ToString(vm) + " ";
-        cur = &cur->Cdr.AsCell();
-      } else {
-        if (cur->Cdr.IsNil()) {
-          r += cur->Car.ToString(vm);
-        } else {
-          r += cur->Car.ToString(vm) + " . " + cur->Cdr.ToString(vm);
-        }
-        break;
-      }
-    }
-    return r + ")";
-  }
-  case ValueType::STRING:
-    return '"' + AsString() + '"';
-  case ValueType::PROCEDURE:
-    return "#<proc>";
-  default:
-    return "?";
-  }
+  stringstream s;
+  pretty_print(s, *this);
+  return s.str();
 }
 
 const string Value::ToString(const VM &vm) const { return ToString(&vm); }

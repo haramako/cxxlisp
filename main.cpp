@@ -9,7 +9,6 @@ using namespace std;
 
 static Value run(VM &vm, string_view src) {
   init_func(vm);
-  Eval eval{&vm};
   Parser parser{&vm, src};
   Value result;
   for (;;) {
@@ -17,7 +16,7 @@ static Value run(VM &vm, string_view src) {
     if (code.IsNil()) {
       break;
     }
-    result = eval.Execute(code);
+    result = Eval().Execute(vm, code);
   }
   return result;
 }
