@@ -22,7 +22,7 @@
   
 * マクロ展開
 * デバッグ機能
-  * pretty-print(文字数制限付き)
+  - pretty-print(文字数制限付き)
   * スタックトレース
 
 # 基本方針
@@ -48,7 +48,7 @@ atom
 string
 pair
 custom object
-?procedure
+procedure
 ?vector(slice)
 ?dict
 ?tuple

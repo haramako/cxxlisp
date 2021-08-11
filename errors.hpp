@@ -4,6 +4,8 @@
 
 namespace cxxlisp {
 
+class Ctx;
+
 /**
  * Base class of lisp exceptions.
  */
@@ -14,6 +16,8 @@ public:
   LispException(const char *msg) : msg_(msg) {}
   LispException(const std::string_view msg) : msg_(msg) {}
   const char *what() const noexcept override { return msg_.c_str(); }
+
+  std::vector<std::string> Stack;
 };
 
 /**

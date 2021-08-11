@@ -48,7 +48,7 @@ static Value func1(Ctx &ctx, vint_t arg1) { return arg1; }
 
 TEST(ValueTest, Procedure) {
   VM vm;
-  Ctx ctx{&vm, &vm.RootEnv()};
+  Ctx ctx{&vm, &vm.RootEnv(), NIL};
 
   auto proc0 = make_procedure(func0);
   auto proc1 = make_procedure(func1);

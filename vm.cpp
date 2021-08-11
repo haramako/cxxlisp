@@ -48,7 +48,9 @@ Value Compiler::doBegin(Ctx &ctx, Value rest) {
 Value Compiler::doDefine(Ctx &ctx, Value rest) {
   Value name = car(rest);
   if (name.IsCell()) {
-    return list(car(name), doValue(ctx, cons(SYM_LAMBDA, cdr(name))));
+    return list(car(name),
+                doValue(ctx, list(ctx.vm->Intern("procedure-set-name"),
+                                  car(name), cons(SYM_LAMBDA, cdr(name)))));
   } else {
     return rest;
   }
@@ -112,7 +114,7 @@ Value Compiler::doForm(Ctx &ctx, Value code) {
 }
 
 Value Compiler::Compile(VM &vm, Value code) {
-  Ctx ctx{&vm, &vm.RootEnv()};
+  Ctx ctx{&vm, &vm.RootEnv(), NIL};
   return doValue(ctx, code);
 }
 
@@ -202,18 +204,25 @@ Value Eval::doForm(Ctx &ctx, Value code) {
       return doQuote(ctx, pair.Cdr);
     }
   }
-  return call(ctx, doValue(ctx, head), doList(ctx, pair.Cdr));
+  Value result;
+  try {
+    result = call(ctx, doValue(ctx, head), doList(ctx, pair.Cdr));
+  } catch (LispException &ex) {
+    ex.Stack.push_back(code.ToString());
+    throw;
+  }
+  return result;
 }
 
 Value Eval::call(Ctx &ctx, Value proc_, Value args) {
-  auto proc = proc_.AsProcedure();
+  auto &proc = proc_.AsProcedure();
   if (proc.IsNative()) {
     // Call native procecure.
     return proc.Func()(ctx, args);
   } else {
     // Call lisp procedure.
     Env *new_env = new Env(ctx.vm, ctx.env);
-    Ctx new_ctx{ctx.vm, new_env};
+    Ctx new_ctx{ctx.vm, new_env, proc.Body()};
 
     // Setup arguments.
     for (Value a = args, p = proc.Params(); !p.IsNil();
@@ -226,14 +235,32 @@ Value Eval::call(Ctx &ctx, Value proc_, Value args) {
       }
     }
 
-    Value result = doBegin(new_ctx, proc.Body());
+    Value result;
+    try {
+      result = doBegin(new_ctx, proc.Body());
+    } catch (LispException &ex) {
+      ex.Stack.push_back(proc_.ToString());
+      throw;
+    }
     return result;
   }
 }
 
 Value Eval::Execute(VM &vm, Value code) {
-  Ctx ctx{&vm, &vm.RootEnv()};
-  return doValue(ctx, code);
+  Ctx ctx{&vm, &vm.RootEnv(), NIL};
+  Value result;
+  try {
+    result = doValue(ctx, code);
+  } catch (LispException &ex) {
+    int i = ex.Stack.size();
+    for (auto const &stack : ex.Stack) {
+      i--;
+      cout << i << ": " << stack << endl;
+    }
+    cout << "error: " << ex.what() << endl;
+    throw;
+  }
+  return result;
 }
 
 //===================================================================

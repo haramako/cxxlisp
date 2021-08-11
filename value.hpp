@@ -127,31 +127,35 @@ public:
     chk(ValueType::NUMBER);
     return (int)i_;
   }
+
   const std::string &AsSpecial() const {
     chk(ValueType::SPECIAL);
     return ref<std::string>();
   }
+
   Atom AsAtom() const {
     chk(ValueType::ATOM);
     return Atom((int)i_);
   }
+
   Cell &AsCell() {
     chk(ValueType::CELL);
     return ref<Cell>();
   }
-  const Cell &AsCell() const {
-    chk(ValueType::CELL);
-    return ref<Cell>();
-  }
+  const Cell &AsCell() const { return AsCell(); }
+
   const StringValue &AsStringValue() {
     chk(ValueType::STRING);
     return ref<StringValue>();
   }
   const std::string &AsString() const;
-  const Procedure &AsProcedure() const {
+
+  Procedure &AsProcedure() {
     chk(ValueType::PROCEDURE);
     return ref<Procedure>();
   }
+  const Procedure &AsProcedure() const { return AsProcedure(); }
+
   const CustomObject &AsCustomObject() {
     chk(ValueType::CUSTOM_OBJECT);
     return ref<CustomObject>();
@@ -228,17 +232,21 @@ class Procedure {
   Value params_;
   Value body_;
 
+  std::string name_;
+
 public:
   Procedure(int arity, func_t func)
       : isNative_(true), arity_(arity), func_(func) {}
   Procedure(Value params, Value body)
       : isNative_(false), params_(params), body_(body) {}
 
-  bool IsNative() { return isNative_; }
+  bool IsNative() const { return isNative_; }
   int Arity() const { return arity_; }
   func_t Func() const { return func_; }
   Value Params() const { return params_; }
   Value Body() const { return body_; }
+  const std::string &Name() const { return name_; }
+  void SetName(std::string_view name) { name_ = name; }
 };
 
 } // namespace cxxlisp

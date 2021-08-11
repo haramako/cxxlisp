@@ -44,7 +44,12 @@ static bool pp_(ostream &os, Ctx &ctx, Value v, int &len) {
     }
   }
   case ValueType::PROCEDURE: {
-    return p("#<proc>"); // TODO: lambda name
+    Procedure &proc = v.AsProcedure();
+    if (proc.Name().empty()) {
+      return p("#<proc>");
+    } else {
+      return p("#<proc " + proc.Name() + ">");
+    }
   }
   case ValueType::CELL: {
     if (!p("(")) {
@@ -89,12 +94,13 @@ static bool pp_(ostream &os, Ctx &ctx, Value v, int &len) {
     }
   }
   default:
+    cout << "type:" << (int)v.Type() << endl;
     assert(0);
   }
 }
 
 ostream &pretty_print(ostream &os, Value v, int len) {
-  Ctx ctx{VM::Default, &VM::Default->RootEnv()};
+  Ctx ctx{VM::Default, &VM::Default->RootEnv(), NIL};
   if (!pp_(os, ctx, v, len)) {
     os << "...";
   }

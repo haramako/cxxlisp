@@ -12,6 +12,8 @@ class VM;
 struct Ctx {
   VM *vm;
   Env *env;
+  Value code;
+  Ctx(VM *v, Env *e, Value c) : vm(v), env(e), code(c) {}
 };
 
 class Env {

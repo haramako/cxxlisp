@@ -16,6 +16,9 @@ template <> inline Atom val_as<Atom>(Value v) { return v.AsAtom(); }
 template <> inline const std::string &val_as<const std::string &>(Value v) {
   return v.AsString();
 }
+template <> inline Procedure &val_as<Procedure &>(Value v) {
+  return v.AsProcedure();
+}
 template <> inline Value val_as<Value>(Value v) { return v; }
 
 inline Value car(Value v) { return v.AsCell().Car; }

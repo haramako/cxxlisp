@@ -58,6 +58,10 @@ static Value list_(Ctx &ctx, Value args) { return args; }
 
 static Value cons_(Ctx &ctx, Value v1, Value v2) { return new Cell(v1, v2); }
 
+static Value procedure_set_name(Ctx &ctx, const string &name, Procedure &proc) {
+  return &proc;
+}
+
 #define F(id, f) env.Set(vm.Intern(id), make_procedure(f));
 #define FVARG(id, f) env.Set(vm.Intern(id), new Procedure(-1, f));
 
@@ -67,6 +71,7 @@ void init_func(VM &vm) {
   FVARG("-", sub);
   F("cons", cons_);
   FVARG("list", list_);
+  F("procedure-set-name", procedure_set_name);
 }
 
 } // namespace cxxlisp

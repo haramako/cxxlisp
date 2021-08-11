@@ -42,7 +42,8 @@ TEST(CompilerTest, Simple) {
       {"(if 1 2 3)", "(if 1 2 3)"},
       {"(if 1 2 #undef)", "(if 1 2)"},
       {"(define x 1)", "(define x 1)"},
-      {"(define f (lambda (x) x))", "(define (f (x) x))"},
+      {"(define f (procedure-set-name f (lambda (x) x)))",
+       "(define (f (x) x))"},
   };
 
   for (const auto &t : tests) {
@@ -82,6 +83,7 @@ TEST(EvalTest, Simple) {
       {"(1 2)", R"(((lambda x x) 1 2))"},
       {"(1 (2 3))", R"(((lambda (x . y) (list x y)) 1 2 3))"},
       {"1", R"((begin (define x 1) ((lambda () x))))"},
+      //{"1", R"((begin (define x 1) ((lambda () y))))"},
   };
 
   for (const auto &t : tests) {
