@@ -25,7 +25,8 @@ public:
   Env(VM *vm, Env *upper) : vm_(vm), upper_(upper) {}
   bool Get(Atom id, Value &result) const;
   Value GetOr(Atom id, Value default_ = NIL) const;
-  void Set(Atom id, Value v);
+  void Define(Atom id, Value v);
+  bool Set(Atom id, Value v);
 
   int Count() { return map_.size(); }
 };
@@ -38,6 +39,7 @@ public:
 class Compiler {
   Value doBegin(Ctx &ctx, Value rest);
   Value doDefine(Ctx &ctx, Value rest);
+  Value doSet(Ctx &ctx, Value rest);
   Value doIf(Ctx &ctx, Value rest);
   Value doQuote(Ctx &ctx, Value rest);
   Value doLambda(Ctx &ctx, Value rest);
@@ -54,9 +56,11 @@ public:
 class Eval {
   Value doBegin(Ctx &ctx, Value rest);
   Value doDefine(Ctx &ctx, Value rest);
+  Value doSet(Ctx &ctx, Value rest);
   Value doIf(Ctx &ctx, Value rest);
   Value doQuote(Ctx &ctx, Value rest);
   Value doLambda(Ctx &ctx, Value rest);
+  Value doLoop(Ctx &ctx, Value rest);
 
   Value doValue(Ctx &ctx, Value code);
   Value doList(Ctx &ctx, Value code);
@@ -67,6 +71,9 @@ public:
   Eval(){};
 
   Value Execute(VM &vm, Value code);
+  Value Execute(Ctx &ctx, Value code);
+
+  Value Call(Ctx &ctx, Value proc, Value args);
 };
 
 /**
@@ -93,6 +100,18 @@ public:
   }
 
   Env &RootEnv() { return rootEnv_; }
+};
+
+/**
+ * 'break' in loop.
+ */
+class BreakException : public std::exception {
+  Value result_;
+
+public:
+  BreakException(Value v) : result_(v) {}
+
+  Value Result() const { return result_; }
 };
 
 // From func.cpp

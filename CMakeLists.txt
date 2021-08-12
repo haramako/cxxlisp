@@ -13,6 +13,7 @@ set(srcs
   value.cpp
   parser.cpp
   pretty_print.cpp
+  util.cpp
   vm.cpp
   )
 

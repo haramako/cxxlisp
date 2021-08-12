@@ -67,6 +67,8 @@ enum class SpecialForm {
   QUOTE,
   QUASIQUOTE,
   UNQUOTE,
+  LOOP,
+  SET_EX,
 };
 
 extern const char *VALUE_TYPE_NAMES[];
@@ -99,6 +101,7 @@ class Value {
 public:
   Value() : type_(ValueType::NIL) {}
   Value(int v) : type_(ValueType::NUMBER), i_(v) {}
+  Value(bool v) : Value(v ? BOOL_T : BOOL_F) {}
   Value(Atom v) : type_(ValueType::ATOM), i_(v.Id()) {}
   Value(Cell *v) : type_(ValueType::CELL), i_((uintptr_t)v) { assert(v); }
   Value(const std::string &v);
@@ -231,6 +234,7 @@ class Procedure {
   func_t func_;
   Value params_;
   Value body_;
+  bool isMacro_;
 
   std::string name_;
 
@@ -246,7 +250,9 @@ public:
   Value Params() const { return params_; }
   Value Body() const { return body_; }
   const std::string &Name() const { return name_; }
-  void SetName(std::string_view name) { name_ = name; }
+  void SetName(std::string_view v) { name_ = v; }
+  bool IsMacro() const { return isMacro_; }
+  void SetIsMacro(bool v) { isMacro_ = v; }
 };
 
 } // namespace cxxlisp

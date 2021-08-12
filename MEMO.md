@@ -17,13 +17,11 @@
   - , = unquote
   x リードマクロ
 
-- executer
-  - 
   
 * マクロ展開
-* デバッグ機能
+- デバッグ機能
   - pretty-print(文字数制限付き)
-  * スタックトレース
+  - スタックトレース
 
 # 基本方針
 
@@ -64,9 +62,10 @@ procedure
 - if
 * cond(else,=>)
 
-* define-macro
+- defmacro
 * macro-expand
 * macro-expand1
+* loop/break
 
 # 関数
 

@@ -30,14 +30,26 @@ Value Env::GetOr(Atom id, Value default_) const {
   }
 }
 
-void Env::Set(Atom id, Value v) { map_[id.Id()] = v; }
+void Env::Define(Atom id, Value v) { map_[id.Id()] = v; }
+
+bool Env::Set(Atom id, Value v) {
+  auto it = map_.find(id.Id());
+  if (it != map_.end()) {
+    map_[id.Id()] = v;
+    return true;
+  } else if (upper_) {
+    return upper_->Set(id, v);
+  } else {
+    return false;
+  }
+}
 
 //===================================================================
 // Compiler
 //===================================================================
 
 Value Compiler::doBegin(Ctx &ctx, Value rest) {
-  // cout << "run: " << car(rest) << endl;
+  // cout << "compile: " << car(rest) << endl;
   if (rest.IsNil()) {
     return NIL;
   } else {
@@ -49,11 +61,16 @@ Value Compiler::doDefine(Ctx &ctx, Value rest) {
   Value name = car(rest);
   if (name.IsCell()) {
     return list(car(name),
-                doValue(ctx, list(ctx.vm->Intern("procedure-set-name"),
+                doValue(ctx, list(ctx.vm->Intern("procedure-set-name!"),
                                   car(name), cons(SYM_LAMBDA, cdr(name)))));
   } else {
     return rest;
   }
+}
+
+Value Compiler::doSet(Ctx &ctx, Value rest) {
+  auto [name, value] = uncons<Atom, Value>(rest);
+  return list(name, value);
 }
 
 Value Compiler::doIf(Ctx &ctx, Value rest) {
@@ -93,21 +110,37 @@ Value Compiler::doList(Ctx &ctx, Value code) {
 }
 
 Value Compiler::doForm(Ctx &ctx, Value code) {
+  // cout << "C:" << code << endl;
   Cell pair = code.AsCell();
   Value head = pair.Car;
   if (head.IsAtom()) {
-    SpecialForm atom_id = (SpecialForm)head.AsAtom().Id();
+    Atom atom = head.AsAtom();
+    SpecialForm atom_id = (SpecialForm)atom.Id();
     switch (atom_id) {
     case SpecialForm::BEGIN:
       return cons(head, doBegin(ctx, pair.Cdr));
     case SpecialForm::DEFINE:
       return cons(head, doDefine(ctx, pair.Cdr));
+    case SpecialForm::SET_EX:
+      return cons(head, doSet(ctx, pair.Cdr));
     case SpecialForm::IF:
       return cons(head, doIf(ctx, pair.Cdr));
     case SpecialForm::LAMBDA:
       return cons(head, doLambda(ctx, pair.Cdr));
     case SpecialForm::QUOTE:
       return code;
+    case SpecialForm::LOOP:
+      return cons(head, doBegin(ctx, pair.Cdr));
+    default: {
+      Value f;
+      // Macro transform.
+      if (ctx.vm->RootEnv().Get(atom, f) && f.IsProcedure()) {
+        if (f.AsProcedure().IsMacro()) {
+          Value result = Eval().Call(ctx, f, cdr(code));
+          return doValue(ctx, result);
+        }
+      }
+    }
     }
   }
   return cons(head, doList(ctx, pair.Cdr));
@@ -134,8 +167,18 @@ Value Eval::doBegin(Ctx &ctx, Value rest) {
 
 Value Eval::doDefine(Ctx &ctx, Value rest) {
   auto [name, val] = uncons<Atom, Value>(rest);
-  ctx.vm->RootEnv().Set(name, val);
+  ctx.vm->RootEnv().Define(name, doValue(ctx, val));
   return NIL;
+}
+
+Value Eval::doSet(Ctx &ctx, Value rest) {
+  auto [name, val] = uncons<Atom, Value>(rest);
+  if (ctx.vm->RootEnv().Set(name, doValue(ctx, val))) {
+    return NIL;
+  } else {
+    throw LispException(string("Symbol '") + ctx.vm->AtomToString(name) +
+                        "' not found.");
+  }
 }
 
 Value Eval::doIf(Ctx &ctx, Value rest) {
@@ -152,6 +195,16 @@ Value Eval::doQuote(Ctx &ctx, Value rest) { return car(rest); }
 
 Value Eval::doLambda(Ctx &ctx, Value rest) {
   return new Procedure(car(rest), cdr(rest));
+}
+
+Value Eval::doLoop(Ctx &ctx, Value rest) {
+  try {
+    for (;;) {
+      doBegin(ctx, rest);
+    }
+  } catch (BreakException &ex) {
+    return ex.Result();
+  }
 }
 
 Value Eval::doValue(Ctx &ctx, Value code) {
@@ -202,16 +255,19 @@ Value Eval::doForm(Ctx &ctx, Value code) {
       return doLambda(ctx, pair.Cdr);
     case SpecialForm::QUOTE:
       return doQuote(ctx, pair.Cdr);
+    case SpecialForm::LOOP:
+      return doLoop(ctx, pair.Cdr);
+    case SpecialForm::SET_EX:
+      return doSet(ctx, pair.Cdr);
     }
   }
-  Value result;
+
   try {
-    result = call(ctx, doValue(ctx, head), doList(ctx, pair.Cdr));
+    return call(ctx, doValue(ctx, head), doList(ctx, pair.Cdr));
   } catch (LispException &ex) {
     ex.Stack.push_back(code.ToString());
     throw;
   }
-  return result;
 }
 
 Value Eval::call(Ctx &ctx, Value proc_, Value args) {
@@ -228,9 +284,9 @@ Value Eval::call(Ctx &ctx, Value proc_, Value args) {
     for (Value a = args, p = proc.Params(); !p.IsNil();
          a = cdr(a), p = cdr(p)) {
       if (p.IsCell()) {
-        new_env->Set(car(p).AsAtom(), car(a));
+        new_env->Define(car(p).AsAtom(), car(a));
       } else {
-        new_env->Set(p.AsAtom(), a);
+        new_env->Define(p.AsAtom(), a);
         break;
       }
     }
@@ -246,8 +302,11 @@ Value Eval::call(Ctx &ctx, Value proc_, Value args) {
   }
 }
 
-Value Eval::Execute(VM &vm, Value code) {
-  Ctx ctx{&vm, &vm.RootEnv(), NIL};
+Value Eval::Call(Ctx &ctx, Value proc, Value args) {
+  return call(ctx, proc, args);
+}
+
+Value Eval::Execute(Ctx &ctx, Value code) {
   Value result;
   try {
     result = doValue(ctx, code);
@@ -261,6 +320,11 @@ Value Eval::Execute(VM &vm, Value code) {
     throw;
   }
   return result;
+}
+
+Value Eval::Execute(VM &vm, Value code) {
+  Ctx ctx{&vm, &vm.RootEnv(), NIL};
+  return Execute(ctx, code);
 }
 
 //===================================================================
@@ -277,6 +341,8 @@ VM::VM() : rootEnv_(this, nullptr) {
   Intern("quote");
   Intern("quasiquote");
   Intern("unquote");
+  Intern("loop");
+  Intern("set!");
 
   // cout << Intern("quote").Id() << " " << (int)SpecialForm::QUOTE << endl;
 }

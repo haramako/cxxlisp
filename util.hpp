@@ -12,6 +12,7 @@ namespace cxxlisp {
 template <typename T> inline T val_as(Value v);
 
 template <> inline vint_t val_as<vint_t>(Value v) { return v.AsNumber(); }
+template <> inline bool val_as<bool>(Value v) { return v.Truthy(); }
 template <> inline Atom val_as<Atom>(Value v) { return v.AsAtom(); }
 template <> inline const std::string &val_as<const std::string &>(Value v) {
   return v.AsString();
@@ -162,6 +163,8 @@ public:
 
 inline ListIterator begin(Value &v) { return ListIterator(v); }
 inline ListIterator end(Value &v) { return ListIterator(); }
+
+Value run(VM &vm, std::string_view src);
 
 // pretty_print.cpp
 const int PRETTY_PRINT_DEFAULT_LEN = 256;
