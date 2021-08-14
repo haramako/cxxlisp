@@ -1,3 +1,4 @@
+#include "parser.hpp"
 #include "util.hpp"
 #include "value.hpp"
 #include "vm.hpp"
@@ -35,7 +36,7 @@ static bool pp_(ostream &os, Ctx &ctx, Value v, int &len) {
     return p(str);
   }
   case ValueType::STRING: {
-    auto &str = v.AsString();
+    auto str = escape_str(v.AsString());
     if (len >= (int)str.length() + 2) {
       os << '"' << str << '"'; // TODO: Escape
       return (int)str.length() + 2;

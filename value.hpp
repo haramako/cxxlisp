@@ -2,7 +2,7 @@
 #include <cassert>
 #include <cstdint>
 #include <functional>
-#include <gc_cpp.h>
+//#include <gc_cpp.h>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -11,6 +11,11 @@
 #include "errors.hpp"
 
 namespace cxxlisp {
+
+#if 1
+class gc {};
+class gc_cleanup {};
+#endif
 
 using atom_id_t = int;
 using vint_t = int;
@@ -199,7 +204,7 @@ public:
 /**
  * Pair object.
  */
-class Cell final : public gc_cleanup {
+class Cell final : public gc {
 public:
   std::string str();
   Value Car, Cdr;
@@ -232,15 +237,15 @@ inline void spread(int n, Value *vals, Value head) {
 /**
  * Procedure
  */
-class Procedure : public gc_cleanup {
+class Procedure : public gc {
   using func_t = std::function<Value(Ctx &, Value)>;
 
-  bool isNative_;
-  int arity_;
+  bool isNative_ = false;
+  int arity_ = 0;
   func_t func_;
   Value params_;
   Value body_;
-  bool isMacro_;
+  bool isMacro_ = false;
 
   std::string name_;
 

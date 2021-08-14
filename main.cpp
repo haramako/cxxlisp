@@ -1,5 +1,4 @@
 #include <fstream>
-#include <gc_cpp.h>
 #include <iostream>
 
 #include "parser.hpp"

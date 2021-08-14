@@ -1,5 +1,4 @@
-#include <gc_cpp.h>
-#include <iostream> // TODO: remove
+#include <iostream>
 #include <unordered_map>
 #include <vector>
 

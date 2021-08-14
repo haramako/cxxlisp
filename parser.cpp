@@ -9,12 +9,61 @@ namespace cxxlisp {
 using namespace std;
 
 const static regex RE_NUMBER(R"(^[0-9]+)");
-const static regex RE_IDENT(R"(^[a-zA-Z_\-+*/<>=!][a-zA-Z_\-+*/<>=!.1-9]*)");
+const static regex RE_IDENT(R"(^[a-zA-Z_\-+*/<>=!?][a-zA-Z_\-+*/<>=!?.1-9]*)");
 const static regex RE_STRING(R"(^"([^"]*)\")");
 const static regex RE_SYMBOL(R"(^[()\[\]{}.#\\'`,@;])");
 const static regex RE_SPACES(R"(^[\s]+)");
 const static regex RE_LINE_COMMENT(R"(^;[^\n]*\n)");
 const static regex RE_SEXP_COMMENT(R"(^#;)");
+
+string unescape_str(string_view str) {
+  if (str.find('\\') == string::npos) {
+    return string(str);
+  }
+
+  string buf;
+  buf.reserve(str.length());
+
+  for (size_t i = 0; i < str.length(); i++) {
+    if (str[i] == '\\' && i < str.length() - 1) {
+      switch (str[i + 1]) {
+      case 'n':
+        buf.push_back('\n');
+        i++;
+        continue;
+      case '\\':
+        buf.push_back('\\');
+        i++;
+        continue;
+      default:
+        break;
+      }
+    } else {
+      buf.push_back(str[i]);
+    }
+  }
+  return buf;
+}
+
+string escape_str(string_view str) {
+  string buf;
+  buf.reserve(str.length());
+
+  for (size_t i = 0; i < str.length(); i++) {
+    switch (str[i]) {
+    case '\n':
+      buf.append("\\n");
+      continue;
+    case '\t':
+      buf.append("\\t");
+      continue;
+    default:
+      buf.push_back(str[i]);
+      break;
+    }
+  }
+  return buf;
+}
 
 Token::operator string() const {
   switch (Type) {
@@ -27,7 +76,7 @@ Token::operator string() const {
   case TokenType::IDENT:
     return Str;
   case TokenType::STRING:
-    return '"' + Str + '"';
+    return '"' + escape_str(Str) + '"';
   default:
     throw BUG();
   }
@@ -81,7 +130,7 @@ Token Parser::next() {
   } else if (search(mr, RE_IDENT)) {
     cur_ = Token(string(mr[0]));
   } else if (search(mr, RE_STRING)) {
-    cur_ = Token(TokenType::STRING, string(mr[1]));
+    cur_ = Token(TokenType::STRING, unescape_str(string(mr[1])));
   } else if (search(mr, RE_SYMBOL)) {
     cur_ = Token(string(mr[0])[0]);
   } else {
@@ -170,9 +219,8 @@ Value Parser::parseList() {
         }
       }
     } else {
-      unread();
-
       // Normal list element (a | b ...)
+      unread();
       if (!head) {
         head = new Cell();
         tail = head;

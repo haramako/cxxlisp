@@ -1,5 +1,4 @@
 #pragma once
-#include <gc_cpp.h>
 #include <unordered_map>
 #include <vector>
 

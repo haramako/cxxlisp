@@ -1,5 +1,3 @@
-#include <gc_cpp.h>
-
 #include "util.hpp"
 #include "vm.hpp"
 
@@ -108,9 +106,19 @@ static Value append_(Ctx &ctx, Value args) {
   return head;
 }
 
+static Value reverse(Ctx &ctx, Value args) {
+  Value head = NIL;
+  for (Value p = args; !p.IsNil(); p = cdr(p)) {
+    head = cons(car(p), head);
+  }
+  return head;
+}
+
 static Value cons_(Ctx &ctx, Value v1, Value v2) { return new Cell(v1, v2); }
 static Value car_(Ctx &ctx, Cell &v) { return v.Car; }
 static Value cdr_(Ctx &ctx, Cell &v) { return v.Cdr; }
+static Value pair_p(Ctx &ctx, Value v) { return v.IsCell(); }
+static Value null_p(Ctx &ctx, Value v) { return v.IsNil(); }
 
 static Value break_(Ctx &ctx, Value v) { throw BreakException(v); }
 
@@ -134,8 +142,12 @@ static Value defmacro(Ctx &ctx, Value args) {
 }
 
 static Value puts(Ctx &ctx, Value args) {
-  for (auto v : args) {
-    cout << v << " ";
+  for (Value p = args; !p.IsNil(); p = cdr(p)) {
+    Value v = car(p);
+    cout << v;
+    if (!cdr(p).IsNil()) {
+      cout << " ";
+    }
   }
   cout << endl;
   return NIL;
@@ -144,9 +156,9 @@ static Value puts(Ctx &ctx, Value args) {
 static Value display(Ctx &ctx, Value args) {
   for (auto v : args) {
     if (v.IsString()) {
-      cout << v.AsString() << " ";
+      cout << v.AsString();
     } else {
-      cout << v << " ";
+      cout << v;
     }
   }
   return NIL;
@@ -154,7 +166,7 @@ static Value display(Ctx &ctx, Value args) {
 
 static Value write(Ctx &ctx, Value args) {
   for (auto v : args) {
-    cout << v << " ";
+    cout << v;
   }
   return NIL;
 }
@@ -200,8 +212,18 @@ static Value qq(Ctx &ctx, Value x, int depth) {
 
 static Value quasiquote(Ctx &ctx, Cell &args) { return qq(ctx, &args, 0); }
 
-#define F(id, f) env.Define(vm.Intern(id), make_procedure(f));
-#define FVARG(id, f) env.Define(vm.Intern(id), new Procedure(-1, f));
+#define F(id, f)                                                               \
+  {                                                                            \
+    auto *proc = make_procedure(f);                                            \
+    proc->SetName(id);                                                         \
+    env.Define(vm.Intern(id), proc);                                           \
+  }
+#define FVARG(id, f)                                                           \
+  {                                                                            \
+    auto *proc = new Procedure(-1, f);                                         \
+    proc->SetName(id);                                                         \
+    env.Define(vm.Intern(id), proc);                                           \
+  }
 #define MACRO(id, f)                                                           \
   {                                                                            \
     auto *proc = make_procedure(f);                                            \
@@ -225,9 +247,12 @@ void init_func(VM &vm) {
   F("cons", cons_);
   F("car", car_);
   F("cdr", cdr_);
+  F("pair?", pair_p);
+  F("null?", null_p);
 
   FVARG("list", list_);
   FVARG("append", append_);
+  F("reverse", reverse);
 
   F("break", break_);
 

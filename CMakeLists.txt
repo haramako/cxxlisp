@@ -28,7 +28,7 @@ set(test_srcs
   
 ## cxxlisp
 add_executable(cxxlisp main.cpp ${srcs})
-target_link_libraries(cxxlisp PRIVATE gc)
+target_link_libraries(cxxlisp PRIVATE)
 
 ## testcxxlisp
 add_executable(testcxxlisp ${srcs} ${test_srcs})
@@ -36,7 +36,7 @@ target_link_libraries(testcxxlisp
   PRIVATE
   GTest::GTest
   GTest::Main
-  gc)
+  )
 
 
 ## target 'test'

@@ -61,4 +61,7 @@ public:
   Value Read();
 };
 
+std::string escape_str(const std::string_view str);
+std::string unescape_str(const std::string_view str);
+
 } // namespace cxxlisp
