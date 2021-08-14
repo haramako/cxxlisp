@@ -1,3 +1,5 @@
+#include <gc_cpp.h>
+
 #include "util.hpp"
 #include "vm.hpp"
 

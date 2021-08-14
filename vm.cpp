@@ -113,7 +113,7 @@ Value Compiler::doList(Ctx &ctx, Value code) {
 
 Value Compiler::doForm(Ctx &ctx, Value code) {
   // cout << "C:" << code << endl;
-  Cell pair = code.AsCell();
+  Cell &pair = code.AsCell();
   Value head = pair.Car;
   if (head.IsAtom()) {
     Atom atom = head.AsAtom();
@@ -249,7 +249,7 @@ Value Eval::doList(Ctx &ctx, Value code) {
 }
 
 Value Eval::doForm(Ctx &ctx, Value code) {
-  Cell pair = code.AsCell();
+  Cell &pair = code.AsCell();
   Value head = pair.Car;
   if (head.IsAtom()) {
     SpecialForm atom_id = (SpecialForm)head.AsAtom().Id();

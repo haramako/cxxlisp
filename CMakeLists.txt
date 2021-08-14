@@ -4,7 +4,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_FLAGS "-O2 -Wall -Wextra -Wno-unused-parameter -Wno-sequence-point")
+set(CMAKE_LD_FLAGS "-lgc")
 find_package(GTest REQUIRED)
+find_library(gc NAMES libgc.a)
 
 ## Set our project name
 project(cxxlisp)
@@ -26,14 +28,15 @@ set(test_srcs
   
 ## cxxlisp
 add_executable(cxxlisp main.cpp ${srcs})
-target_link_libraries(cxxlisp)
+target_link_libraries(cxxlisp PRIVATE gc)
 
 ## testcxxlisp
 add_executable(testcxxlisp ${srcs} ${test_srcs})
 target_link_libraries(testcxxlisp
   PRIVATE
   GTest::GTest
-  GTest::Main)
+  GTest::Main
+  gc)
 
 
 ## target 'test'

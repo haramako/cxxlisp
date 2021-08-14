@@ -1,4 +1,5 @@
 #pragma once
+#include <gc_cpp.h>
 #include <unordered_map>
 #include <vector>
 
@@ -16,7 +17,7 @@ struct Ctx {
   Ctx(VM *v, Env *e, Value c) : vm(v), env(e), code(c) {}
 };
 
-class Env {
+class Env : public gc_cleanup {
   VM *vm_;
   Env *upper_;
   std::unordered_map<atom_id_t, Value> map_;

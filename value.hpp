@@ -2,6 +2,7 @@
 #include <cassert>
 #include <cstdint>
 #include <functional>
+#include <gc_cpp.h>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -190,7 +191,7 @@ inline bool operator!=(const Value &a, const Value &b) { return !(a == b); }
 /**
  * Base class of lisp object.
  */
-class CustomObject {
+class CustomObject : public gc_cleanup {
 public:
   virtual std::string str() = 0;
 };
@@ -198,18 +199,21 @@ public:
 /**
  * Pair object.
  */
-class Cell final {
+class Cell final : public gc_cleanup {
 public:
   std::string str();
   Value Car, Cdr;
   Cell() : Car(), Cdr() {}
   Cell(Value car, Value cdr) : Car(car), Cdr(cdr) {}
+
+  Cell(const Cell &) = delete;
+  Cell &operator=(const Cell &) = delete;
 };
 
 /**
  * StringValue
  */
-class StringValue final {
+class StringValue final : public gc_cleanup {
   std::string v_;
 
 public:
@@ -228,7 +232,7 @@ inline void spread(int n, Value *vals, Value head) {
 /**
  * Procedure
  */
-class Procedure {
+class Procedure : public gc_cleanup {
   using func_t = std::function<Value(Ctx &, Value)>;
 
   bool isNative_;
