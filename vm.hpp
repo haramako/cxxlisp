@@ -9,14 +9,14 @@ namespace cxxlisp {
 class Env;
 class VM;
 
-struct Ctx {
+struct Ctx : public noncopyable {
   VM *vm;
   Env *env;
   Value code;
   Ctx(VM *v, Env *e, Value c) : vm(v), env(e), code(c) {}
 };
 
-class Env : public gc_cleanup {
+class Env : public gc_cleanup, noncopyable {
   VM *vm_;
   Env *upper_;
   std::unordered_map<atom_id_t, Value> map_;
@@ -79,7 +79,7 @@ public:
 /**
  * List Virtual Machine.
  */
-class VM {
+class VM : public noncopyable {
   std::unordered_map<std::string, Atom> atomKeyToId_;
   std::vector<std::string> atomIdToKey_;
   Env rootEnv_;
@@ -94,8 +94,6 @@ public:
   static VM *Default;
 
   VM();
-  VM(const VM &) = delete;
-  VM &operator=(const VM &) = delete;
 
   Atom Intern(const char *v);
   Atom Intern(const std::string &v) { return Intern(v.c_str()); }

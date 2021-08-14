@@ -38,6 +38,16 @@ extern Value SYM_UNQUOTE;
 extern Value SYM_LAMBDA;
 extern Value SYM_UNQUOTE_SPLICING;
 
+//[[no_unique_address]]
+class noncopyable {
+public:
+  noncopyable() {}
+
+private:
+  void operator=(const noncopyable &src) = delete;
+  noncopyable(const noncopyable &src) = delete;
+};
+
 class Atom {
   atom_id_t id_;
 
@@ -204,21 +214,18 @@ public:
 /**
  * Pair object.
  */
-class Cell final : public gc {
+class Cell final : public gc, noncopyable {
 public:
   std::string str();
   Value Car, Cdr;
   Cell() : Car(), Cdr() {}
   Cell(Value car, Value cdr) : Car(car), Cdr(cdr) {}
-
-  Cell(const Cell &) = delete;
-  Cell &operator=(const Cell &) = delete;
 };
 
 /**
  * StringValue
  */
-class StringValue final : public gc_cleanup {
+class StringValue final : public gc_cleanup, noncopyable {
   std::string v_;
 
 public:
@@ -237,7 +244,7 @@ inline void spread(int n, Value *vals, Value head) {
 /**
  * Procedure
  */
-class Procedure : public gc_cleanup {
+class Procedure : public gc_cleanup, noncopyable {
   using func_t = std::function<Value(Ctx &, Value)>;
 
   bool isNative_ = false;
