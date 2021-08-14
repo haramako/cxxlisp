@@ -2,7 +2,7 @@
 #include <cassert>
 #include <cstdint>
 #include <functional>
-//#include <gc_cpp.h>
+#include <gc_cpp.h>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -12,7 +12,7 @@
 
 namespace cxxlisp {
 
-#if 1
+#if 0
 class gc {};
 class gc_cleanup {};
 #endif
@@ -237,12 +237,12 @@ inline void spread(int n, Value *vals, Value head) {
 /**
  * Procedure
  */
-class Procedure : public gc {
+class Procedure : public gc_cleanup {
   using func_t = std::function<Value(Ctx &, Value)>;
 
   bool isNative_ = false;
   int arity_ = 0;
-  func_t func_;
+  func_t func_ = nullptr;
   Value params_;
   Value body_;
   bool isMacro_ = false;

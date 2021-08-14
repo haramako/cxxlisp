@@ -282,6 +282,7 @@ Value Eval::doForm(Ctx &ctx, Value code) {
 }
 
 Value Eval::call(Ctx &ctx, Value proc_, Value args) {
+  // cout << "call " << proc_ << " " << args << endl;
   auto &proc = proc_.AsProcedure();
   if (proc.IsNative()) {
     // Call native procecure.
