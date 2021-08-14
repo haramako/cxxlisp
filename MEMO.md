@@ -22,7 +22,7 @@
   - pretty-print(文字数制限付き)
   - スタックトレース
   
-* quasiqoute
+- quasiqoute
 
 # 基本方針
 
@@ -66,7 +66,7 @@ procedure
 - defmacro
 * macro-expand
 * macro-expand1
-* loop/break
+- loop/break
 
 # 関数
 

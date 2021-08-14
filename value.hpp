@@ -30,6 +30,7 @@ extern Value SYM_QUOTE;
 extern Value SYM_QUASIQUOTE;
 extern Value SYM_UNQUOTE;
 extern Value SYM_LAMBDA;
+extern Value SYM_UNQUOTE_SPLICING;
 
 class Atom {
   atom_id_t id_;
@@ -69,6 +70,7 @@ enum class SpecialForm {
   UNQUOTE,
   LOOP,
   SET_EX,
+  UNQUOTE_SPLICING,
 };
 
 extern const char *VALUE_TYPE_NAMES[];

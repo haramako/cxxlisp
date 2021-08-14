@@ -9,7 +9,7 @@ using namespace std;
 static bool pp_(ostream &os, Ctx &ctx, Value v, int &len) {
 
   auto p = [&len, &os](string_view str) {
-    if (len >= str.length()) {
+    if (len >= (int)str.length()) {
       os << str;
       len -= (int)str.length();
       return true;
@@ -36,7 +36,7 @@ static bool pp_(ostream &os, Ctx &ctx, Value v, int &len) {
   }
   case ValueType::STRING: {
     auto &str = v.AsString();
-    if (len >= str.length() + 2) {
+    if (len >= (int)str.length() + 2) {
       os << '"' << str << '"'; // TODO: Escape
       return (int)str.length() + 2;
     } else {

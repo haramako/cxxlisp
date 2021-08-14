@@ -94,6 +94,18 @@ static Value less(Ctx &ctx, Value args) {
 
 static Value list_(Ctx &ctx, Value args) { return args; }
 
+static Value append_(Ctx &ctx, Value args) {
+  Value head = car(args);
+  Value tail = car(args);
+  for (Value rest = cdr(args); !rest.IsNil(); rest = cdr(rest)) {
+    while (!cdr(tail).IsNil()) {
+      tail = cdr(tail);
+    }
+    tail.AsCell().Cdr = car(rest);
+  }
+  return head;
+}
+
 static Value cons_(Ctx &ctx, Value v1, Value v2) { return new Cell(v1, v2); }
 static Value car_(Ctx &ctx, Cell &v) { return v.Car; }
 static Value cdr_(Ctx &ctx, Cell &v) { return v.Cdr; }
@@ -145,8 +157,55 @@ static Value write(Ctx &ctx, Value args) {
   return NIL;
 }
 
+static Value qq(Ctx &ctx, Value x, int depth) {
+  auto i = [&](const char *a) { return ctx.vm->Intern(a); };
+
+  if (x.IsCell()) {
+    Value head = car(x);
+    if (head == SYM_UNQUOTE) {
+      if (depth <= 0) {
+        return car(cdr(x));
+      } else {
+        return list(i("list"), list(SYM_QUOTE, SYM_UNQUOTE),
+                    qq(ctx, car(cdr(x)), depth - 1));
+      }
+    } else if (head == SYM_UNQUOTE_SPLICING) {
+      if (depth <= 0) {
+        return list(i("cons"), qq(ctx, head, depth), qq(ctx, cdr(x), depth));
+      } else {
+        return list(i("list"), list(list(SYM_QUOTE, SYM_UNQUOTE_SPLICING),
+                                    qq(ctx, cdr(x), depth - 1)));
+      }
+    } else if (head == SYM_QUASIQUOTE) {
+      return list(i("list"), list(SYM_QUOTE, SYM_QUASIQUOTE),
+                  qq(ctx, car(cdr(x)), depth - 1));
+    } else if (depth <= 0 && head.IsCell() &&
+               car(head) == SYM_UNQUOTE_SPLICING) {
+      if (cdr(x).IsNil()) {
+        return car(cdr(head));
+      } else {
+        return list(i("append"), car(cdr(head)), qq(ctx, cdr(x), depth));
+      }
+    } else {
+      return list(i("cons"), qq(ctx, head, 0), qq(ctx, cdr(x), depth));
+    }
+  } else if (x.IsAtom() || x.IsNil()) {
+    return list(SYM_QUOTE, x);
+  } else {
+    return x;
+  }
+}
+
+static Value quasiquote(Ctx &ctx, Cell &args) { return qq(ctx, &args, 0); }
+
 #define F(id, f) env.Define(vm.Intern(id), make_procedure(f));
 #define FVARG(id, f) env.Define(vm.Intern(id), new Procedure(-1, f));
+#define MACRO(id, f)                                                           \
+  {                                                                            \
+    auto *proc = make_procedure(f);                                            \
+    proc->SetIsMacro(true);                                                    \
+    env.Define(vm.Intern(id), proc);                                           \
+  }
 #define MACRO_VARG(id, f)                                                      \
   {                                                                            \
     auto *proc = new Procedure(-1, f);                                         \
@@ -166,12 +225,14 @@ void init_func(VM &vm) {
   F("cdr", cdr_);
 
   FVARG("list", list_);
+  FVARG("append", append_);
 
   F("break", break_);
 
   MACRO_VARG("defmacro", defmacro);
   F("procedure-set-name!", procedure_set_name);
   F("procedure-set-macro!", procedure_set_macro);
+  MACRO("quasiquote", quasiquote);
 
   FVARG("puts", puts);
   FVARG("display", display);

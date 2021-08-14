@@ -77,13 +77,19 @@ TEST(EvalTest, Simple) {
       {"1", R"((defmacro m (x) x) (m 1))"},
       {"3", R"((define n 0) (loop (if (> n 2) (break n) (set! n (+ n 1)))))"},
       {"1", R"((define (f a) a) (f 1))"},
+      {"1", R"((define a 1) `,a)"},
+      {"(a 1)", R"((define a 1) `(a ,a))"},
+      {"(1 (2 (3 4)))", R"(`(1 (2 ,'(3 4))))"},
+      {"(1 2 3)", R"(`(1 ,@'(2 3)))"},
+      {"(1 2 3 4)", R"(`(1 ,@'(2 3) 4))"},
       //{"1", R"((begin (define x 1) ((lambda () y))))"},
   };
 
   for (const auto &t : tests) {
     VM vm;
+    // vm.EnableTrace = true;
+    // vm.EnableTraceMacroExpand = true;
     init_func(vm);
-    cout << get<1>(t) << endl;
     Value result = run(vm, get<1>(t));
     EXPECT_EQ(get<0>(t), result.ToString());
   }

@@ -11,7 +11,7 @@ using namespace std;
 const static regex RE_NUMBER(R"(^[0-9]+)");
 const static regex RE_IDENT(R"(^[a-zA-Z_\-+*/<>=!][a-zA-Z_\-+*/<>=!.1-9]*)");
 const static regex RE_STRING(R"(^"([^"]*)\")");
-const static regex RE_SYMBOL(R"(^[()\[\]{}.#\\'`,;])");
+const static regex RE_SYMBOL(R"(^[()\[\]{}.#\\'`,@;])");
 const static regex RE_SPACES(R"(^[\s]+)");
 const static regex RE_LINE_COMMENT(R"(^;[^\n]*\n)");
 const static regex RE_SEXP_COMMENT(R"(^#;)");
@@ -120,8 +120,15 @@ Value Parser::Read() {
       return list(SYM_QUOTE, Read());
     case '`':
       return list(SYM_QUASIQUOTE, Read());
-    case ',':
-      return list(SYM_UNQUOTE, Read());
+    case ',': {
+      t = next();
+      if (t.Type == TokenType::SYMBOL && t.Char == '@') {
+        return list(SYM_UNQUOTE_SPLICING, Read());
+      } else {
+        unread();
+        return list(SYM_UNQUOTE, Read());
+      }
+    }
     case ')':
     case '.':
     default:

@@ -163,7 +163,7 @@ public:
 };
 
 inline ListIterator begin(Value &v) { return ListIterator(v); }
-inline ListIterator end(Value &v) { return ListIterator(); }
+inline ListIterator end([[maybe_unused]] Value &v) { return ListIterator(); }
 
 Value run(VM &vm, std::string_view src);
 

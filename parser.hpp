@@ -21,8 +21,8 @@ enum class TokenType {
 class Token {
 public:
   TokenType Type;
-  int Number;
-  char Char;
+  int Number = 0;
+  char Char = '\0';
   std::string Str;
 
   Token() : Type(TokenType::EOS), Char('\0') {}

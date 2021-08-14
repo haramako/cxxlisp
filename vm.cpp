@@ -63,9 +63,10 @@ Value Compiler::doDefine(Ctx &ctx, Value rest) {
     return list(car(name),
                 doValue(ctx, list(ctx.vm->Intern("procedure-set-name!"),
                                   list(SYM_QUOTE, car(name)),
-                                  cons(SYM_LAMBDA, cdr(name), cdr(rest)))));
+                                  cons(SYM_LAMBDA, cdr(name),
+                                       doBegin(ctx, cdr(rest))))));
   } else {
-    return rest;
+    return list(name, doValue(ctx, car(cdr(rest))));
   }
 }
 
@@ -267,6 +268,8 @@ Value Eval::doForm(Ctx &ctx, Value code) {
       return doLoop(ctx, pair.Cdr);
     case SpecialForm::SET_EX:
       return doSet(ctx, pair.Cdr);
+    default:
+      break;
     }
   }
 
@@ -346,6 +349,7 @@ VM::VM() : rootEnv_(this, nullptr) {
   Intern("unquote");
   Intern("loop");
   Intern("set!");
+  Intern("unquote-splicing");
 
   // cout << Intern("quote").Id() << " " << (int)SpecialForm::QUOTE << endl;
 }
