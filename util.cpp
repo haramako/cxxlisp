@@ -14,9 +14,9 @@ Value run(VM &vm, string_view src) {
     Value code = parser.Read();
     if (code.IsNil())
       break;
-    // cout << "code " << code << endl;
+    // cout << "code: " << code << endl;
     code = Compiler().Compile(vm, code);
-    // cout << "expanded " << code << endl;
+    // cout << "expanded: " << code << endl;
     result = Eval().Execute(vm, code);
   }
   return result;

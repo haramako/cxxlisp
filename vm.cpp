@@ -62,7 +62,8 @@ Value Compiler::doDefine(Ctx &ctx, Value rest) {
   if (name.IsCell()) {
     return list(car(name),
                 doValue(ctx, list(ctx.vm->Intern("procedure-set-name!"),
-                                  car(name), cons(SYM_LAMBDA, cdr(name)))));
+                                  list(SYM_QUOTE, car(name)),
+                                  cons(SYM_LAMBDA, cdr(name), cdr(rest)))));
   } else {
     return rest;
   }

@@ -43,8 +43,8 @@ TEST(CompilerTest, Simple) {
       {"(if 1 2 3)", "(if 1 2 3)"},
       {"(if 1 2 #undef)", "(if 1 2)"},
       {"(define x 1)", "(define x 1)"},
-      {"(define f (procedure-set-name! f (lambda (x) x)))",
-       "(define (f (x) x))"},
+      {"(define f (procedure-set-name! (quote f) (lambda (x) x)))",
+       "(define (f x) x)"},
   };
 
   for (const auto &t : tests) {
@@ -76,12 +76,14 @@ TEST(EvalTest, Simple) {
       {"1", R"((define x 1) ((lambda () x)))"},
       {"1", R"((defmacro m (x) x) (m 1))"},
       {"3", R"((define n 0) (loop (if (> n 2) (break n) (set! n (+ n 1)))))"},
+      {"1", R"((define (f a) a) (f 1))"},
       //{"1", R"((begin (define x 1) ((lambda () y))))"},
   };
 
   for (const auto &t : tests) {
     VM vm;
     init_func(vm);
+    cout << get<1>(t) << endl;
     Value result = run(vm, get<1>(t));
     EXPECT_EQ(get<0>(t), result.ToString());
   }

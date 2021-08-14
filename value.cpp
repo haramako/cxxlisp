@@ -50,7 +50,10 @@ bool operator==(const Value &a, const Value &b) {
   }
 }
 
-const string &Value::AsString() const { return ref<StringValue>().Ref(); }
+const string &Value::AsString() const {
+  chk(ValueType::STRING);
+  return ref<StringValue>().Ref();
+}
 
 const string Value::ToString(const VM *vm) const {
   stringstream s;

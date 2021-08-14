@@ -74,11 +74,19 @@ static Value greater(Ctx &ctx, Value args) {
 
 static Value less(Ctx &ctx, Value args) {
   Value head = car(args);
+  bool result = true;
   if (head.Type() == ValueType::NUMBER) {
-    return fold<vint_t>(args, [](vint_t a, vint_t b) { return a + b; });
+    fold<vint_t>(args, [&](vint_t a, vint_t b) {
+      result = result && (a < b);
+      return b;
+    });
+    return result;
   } else if (head.Type() == ValueType::STRING) {
-    return foldc<string>(
-        args, [](const string &a, const string &b) { return a + b; });
+    foldc<string>(args, [&](const string &a, const string &b) {
+      result = result && (a < b);
+      return b;
+    });
+    return result;
   } else {
     throw BUG();
   }
@@ -90,8 +98,8 @@ static Value cons_(Ctx &ctx, Value v1, Value v2) { return new Cell(v1, v2); }
 
 static Value break_(Ctx &ctx, Value v) { throw BreakException(v); }
 
-static Value procedure_set_name(Ctx &ctx, const string &name, Procedure &proc) {
-  proc.SetName(name);
+static Value procedure_set_name(Ctx &ctx, Atom name, Procedure &proc) {
+  proc.SetName(ctx.vm->AtomToString(name));
   return &proc;
 }
 
