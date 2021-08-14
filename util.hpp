@@ -14,6 +14,7 @@ template <typename T> inline T val_as(Value v);
 template <> inline vint_t val_as<vint_t>(Value v) { return v.AsNumber(); }
 template <> inline bool val_as<bool>(Value v) { return v.Truthy(); }
 template <> inline Atom val_as<Atom>(Value v) { return v.AsAtom(); }
+template <> inline Cell &val_as<Cell &>(Value v) { return v.AsCell(); }
 template <> inline const std::string &val_as<const std::string &>(Value v) {
   return v.AsString();
 }
@@ -168,7 +169,7 @@ Value run(VM &vm, std::string_view src);
 
 // pretty_print.cpp
 const int PRETTY_PRINT_DEFAULT_LEN = 256;
-std::ostream &pretty_print(std::ostream &os, Value v,
+std::ostream &pretty_print(std::ostream &os, const VM &vm, Value v,
                            int len = PRETTY_PRINT_DEFAULT_LEN);
 
 } // namespace cxxlisp

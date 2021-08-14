@@ -57,7 +57,7 @@ const string &Value::AsString() const {
 
 const string Value::ToString(const VM *vm) const {
   stringstream s;
-  pretty_print(s, *this);
+  pretty_print(s, *vm, *this);
   return s.str();
 }
 

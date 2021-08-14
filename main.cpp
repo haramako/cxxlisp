@@ -13,6 +13,11 @@ int main(int argc, char **argv) {
   init_func(vm);
 
   for (int i = 1; i < argc; i++) {
+    if ("-t"s == argv[i]) {
+      vm.EnableTrace = true;
+      vm.EnableTraceMacroExpand = true;
+      continue;
+    }
     ifstream fs(argv[i]);
     if (!fs.is_open()) {
       cerr << "Can't open '" << argv[i] << "'." << endl;

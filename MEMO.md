@@ -1,5 +1,4 @@
-# cxxlisp
-
+# cxxlispb
 # TODO
 
 - lexer/parser
@@ -18,10 +17,12 @@
   x リードマクロ
 
   
-* マクロ展開
+- マクロ展開
 - デバッグ機能
   - pretty-print(文字数制限付き)
   - スタックトレース
+  
+* quasiqoute
 
 # 基本方針
 
@@ -54,7 +55,7 @@ procedure
 # basic form
 
 - define
-* set!
+- set!
 * let
 
 - lambda

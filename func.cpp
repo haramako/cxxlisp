@@ -95,6 +95,8 @@ static Value less(Ctx &ctx, Value args) {
 static Value list_(Ctx &ctx, Value args) { return args; }
 
 static Value cons_(Ctx &ctx, Value v1, Value v2) { return new Cell(v1, v2); }
+static Value car_(Ctx &ctx, Cell &v) { return v.Car; }
+static Value cdr_(Ctx &ctx, Cell &v) { return v.Cdr; }
 
 static Value break_(Ctx &ctx, Value v) { throw BreakException(v); }
 
@@ -158,7 +160,11 @@ void init_func(VM &vm) {
   FVARG("-", sub);
   FVARG(">", greater);
   FVARG("<", less);
+
   F("cons", cons_);
+  F("car", car_);
+  F("cdr", cdr_);
+
   FVARG("list", list_);
 
   F("break", break_);

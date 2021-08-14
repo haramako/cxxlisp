@@ -14,9 +14,15 @@ Value run(VM &vm, string_view src) {
     Value code = parser.Read();
     if (code.IsNil())
       break;
-    // cout << "code: " << code << endl;
+    if (vm.EnableTrace) {
+      cout << "trace: " << code << endl;
+    }
     code = Compiler().Compile(vm, code);
-    // cout << "expanded: " << code << endl;
+    if (vm.EnableTraceMacroExpand) {
+      cout << "trace: expand ";
+      pretty_print(cout, vm, code, 1000);
+      cout << endl;
+    }
     result = Eval().Execute(vm, code);
   }
   return result;

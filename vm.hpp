@@ -87,6 +87,10 @@ class VM {
   void init();
 
 public:
+  bool EnableStackTrace = true;
+  bool EnableTrace = false;
+  bool EnableTraceMacroExpand = false;
+
   static VM *Default;
 
   VM();

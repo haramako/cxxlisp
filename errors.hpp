@@ -1,6 +1,7 @@
 #pragma once
 #include <exception>
 #include <string>
+#include <vector>
 
 namespace cxxlisp {
 
@@ -16,6 +17,8 @@ public:
   LispException(const char *msg) : msg_(msg) {}
   LispException(const std::string_view msg) : msg_(msg) {}
   const char *what() const noexcept override { return msg_.c_str(); }
+
+  std::string StackTrace() const;
 
   std::vector<std::string> Stack;
 };

@@ -38,7 +38,7 @@ static bool pp_(ostream &os, Ctx &ctx, Value v, int &len) {
     auto &str = v.AsString();
     if (len >= str.length() + 2) {
       os << '"' << str << '"'; // TODO: Escape
-      return (int)str.length();
+      return (int)str.length() + 2;
     } else {
       return 0;
     }
@@ -99,7 +99,7 @@ static bool pp_(ostream &os, Ctx &ctx, Value v, int &len) {
   }
 }
 
-ostream &pretty_print(ostream &os, Value v, int len) {
+ostream &pretty_print(ostream &os, const VM &vm, Value v, int len) {
   Ctx ctx{VM::Default, &VM::Default->RootEnv(), NIL};
   if (!pp_(os, ctx, v, len)) {
     os << "...";

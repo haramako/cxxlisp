@@ -149,7 +149,14 @@ Value Compiler::doForm(Ctx &ctx, Value code) {
 
 Value Compiler::Compile(VM &vm, Value code) {
   Ctx ctx{&vm, &vm.RootEnv(), NIL};
-  return doValue(ctx, code);
+  Value result;
+  try {
+    result = doValue(ctx, code);
+  } catch (LispException &ex) {
+    cout << ex.StackTrace();
+    throw;
+  }
+  return result;
 }
 
 //===================================================================
@@ -312,12 +319,7 @@ Value Eval::Execute(Ctx &ctx, Value code) {
   try {
     result = doValue(ctx, code);
   } catch (LispException &ex) {
-    int i = ex.Stack.size();
-    for (auto const &stack : ex.Stack) {
-      i--;
-      cout << i << ": " << stack << endl;
-    }
-    cout << "error: " << ex.what() << endl;
+    cout << ex.StackTrace();
     throw;
   }
   return result;

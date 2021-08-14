@@ -9,6 +9,7 @@ find_package(GTest REQUIRED)
 project(cxxlisp)
 
 set(srcs
+  errors.cpp
   func.cpp
   value.cpp
   parser.cpp
