@@ -2,20 +2,15 @@
 #include <cassert>
 #include <cstdint>
 #include <functional>
-#include <gc_cpp.h>
 #include <iostream>
 #include <memory>
 #include <sstream>
 #include <string>
 
+#include "config.hpp"
 #include "errors.hpp"
 
 namespace cxxlisp {
-
-#if 0
-class gc {};
-class gc_cleanup {};
-#endif
 
 using atom_id_t = int;
 using vint_t = int;

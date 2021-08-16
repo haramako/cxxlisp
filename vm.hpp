@@ -2,6 +2,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "config.hpp"
 #include "value.hpp"
 
 namespace cxxlisp {
