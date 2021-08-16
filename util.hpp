@@ -1,8 +1,9 @@
 #pragma once
+#include <functional>
+#include <utility>
+
 #include "value.hpp"
 #include "vm.hpp"
-
-#include <utility>
 
 namespace cxxlisp {
 
@@ -189,6 +190,27 @@ public:
 
 inline ListIterator begin(Value &v) { return ListIterator(v); }
 inline ListIterator end([[maybe_unused]] Value &v) { return ListIterator(); }
+
+template <typename T> T fold(Value list, std::function<T(T, T)> f) {
+  Value head = car(list);
+  Value rest = cdr(list);
+  T r = val_as<T>(head);
+  for (auto v : rest) {
+    r = f(r, val_as<T>(v));
+  }
+  return r;
+}
+
+template <typename T>
+T foldc(Value list, std::function<T(const T &, const T &)> f) {
+  Value head = car(list);
+  Value rest = cdr(list);
+  T r = val_as<const T &>(head);
+  for (auto v : rest) {
+    r = f(r, val_as<const T &>(v));
+  }
+  return r;
+}
 
 Value run(VM &vm, std::string_view src);
 

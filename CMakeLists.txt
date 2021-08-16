@@ -25,11 +25,14 @@ project(cxxlisp)
 
 set(srcs
   errors.cpp
-  func.cpp
-  value.cpp
+  lib_core.cpp
+  lib_number.cpp
+  lib_list.cpp
+  lib_string.cpp
   parser.cpp
   pretty_print.cpp
   util.cpp
+  value.cpp
   vm.cpp
   )
 

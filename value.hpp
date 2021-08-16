@@ -131,6 +131,7 @@ public:
   bool IsCell() const { return type_ == ValueType::CELL; }
   bool IsString() const { return type_ == ValueType::STRING; }
   bool IsProcedure() const { return type_ == ValueType::PROCEDURE; }
+  bool IsBoolean() const { return IsT() || IsF(); }
 
   bool IsT() const { return *this == BOOL_T; }
   bool IsF() const { return *this == BOOL_F; }

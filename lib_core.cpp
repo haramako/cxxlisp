@@ -5,121 +5,15 @@ namespace cxxlisp {
 
 using namespace std;
 
-template <typename T> T fold(Value list, function<T(T, T)> f) {
-  Value head = car(list);
-  Value rest = cdr(list);
-  T r = val_as<T>(head);
-  for (auto v : rest) {
-    r = f(r, val_as<T>(v));
-  }
-  return r;
-}
-
-template <typename T> T foldc(Value list, function<T(const T &, const T &)> f) {
-  Value head = car(list);
-  Value rest = cdr(list);
-  T r = val_as<const T &>(head);
-  for (auto v : rest) {
-    r = f(r, val_as<const T &>(v));
-  }
-  return r;
-}
-
-static Value add(Ctx &ctx, Value args) {
-  Value head = car(args);
-  if (head.Type() == ValueType::NUMBER) {
-    return fold<vint_t>(args, [](vint_t a, vint_t b) { return a + b; });
-  } else if (head.Type() == ValueType::STRING) {
-    return foldc<string>(
-        args, [](const string &a, const string &b) { return a + b; });
-  } else {
-    throw BUG();
-  }
-}
-
-static Value sub(Ctx &ctx, Value args) {
-  Value head = car(args);
-  Value rest = cdr(args);
-  if (head.Type() == ValueType::NUMBER) {
-    vint_t r = head.AsNumber();
-    for (auto v : rest) {
-      r -= v.AsNumber();
-      rest = cdr(rest);
-    }
-    return r;
-  } else {
-    throw BUG();
-  }
-}
-
-static Value greater(Ctx &ctx, Value args) {
-  Value head = car(args);
-  bool result = true;
-  if (head.Type() == ValueType::NUMBER) {
-    fold<vint_t>(args, [&](vint_t a, vint_t b) {
-      result = result && (a > b);
-      return b;
-    });
-    return result;
-  } else if (head.Type() == ValueType::STRING) {
-    foldc<string>(args, [&](const string &a, const string &b) {
-      result = result && (a > b);
-      return b;
-    });
-    return result;
-  } else {
-    throw BUG();
-  }
-}
-
-static Value less(Ctx &ctx, Value args) {
-  Value head = car(args);
-  bool result = true;
-  if (head.Type() == ValueType::NUMBER) {
-    fold<vint_t>(args, [&](vint_t a, vint_t b) {
-      result = result && (a < b);
-      return b;
-    });
-    return result;
-  } else if (head.Type() == ValueType::STRING) {
-    foldc<string>(args, [&](const string &a, const string &b) {
-      result = result && (a < b);
-      return b;
-    });
-    return result;
-  } else {
-    throw BUG();
-  }
-}
-
-static Value list_(Ctx &ctx, Value args) { return args; }
-
-static Value append_(Ctx &ctx, Value args) {
-  Value head = car(args);
-  Value tail = car(args);
-  for (Value rest = cdr(args); !rest.IsNil(); rest = cdr(rest)) {
-    while (!cdr(tail).IsNil()) {
-      tail = cdr(tail);
-    }
-    tail.AsCell().Cdr = car(rest);
-  }
-  return head;
-}
-
-static Value reverse(Ctx &ctx, Value args) {
-  Value head = NIL;
-  for (Value p = args; !p.IsNil(); p = cdr(p)) {
-    head = cons(car(p), head);
-  }
-  return head;
-}
-
-static Value cons_(Ctx &ctx, Value v1, Value v2) { return new Cell(v1, v2); }
-static Value car_(Ctx &ctx, Cell &v) { return v.Car; }
-static Value cdr_(Ctx &ctx, Cell &v) { return v.Cdr; }
-static Value pair_p(Ctx &ctx, Value v) { return v.IsCell(); }
 static Value null_p(Ctx &ctx, Value v) { return v.IsNil(); }
+static Value number_p(Ctx &ctx, Value v) { return v.IsNumber(); }
+static Value pair_p(Ctx &ctx, Value v) { return v.IsCell(); }
+static Value string_p(Ctx &ctx, Value v) { return v.IsString(); }
+static Value boolean_p(Ctx &ctx, Value v) { return v.IsBoolean(); }
+static Value procedure_p(Ctx &ctx, Value v) { return v.IsProcedure(); }
+static Value symbol_p(Ctx &ctx, Value v) { return v.IsAtom(); }
 
+static Value not_(Ctx &ctx, bool v) { return !v; }
 static Value break_(Ctx &ctx, Value v) { throw BreakException(v); }
 
 static Value procedure_set_name(Ctx &ctx, Atom name, Procedure &proc) {
@@ -217,22 +111,20 @@ static Value quasiquote(Ctx &ctx, Cell &args) { return qq(ctx, &args, 0); }
 #define M(id, f) add_proc(vm, true, id, f);
 #define MV(id, f) add_proc_varg(vm, true, id, f);
 
+void lib_number_init(VM &vm);
+void lib_list_init(VM &vm);
+void lib_string_init(VM &vm);
+
 void init_func(VM &vm) {
-  FV("+", add);
-  FV("-", sub);
-  FV(">", greater);
-  FV("<", less);
-
-  F("cons", cons_);
-  F("car", car_);
-  F("cdr", cdr_);
-  F("pair?", pair_p);
   F("null?", null_p);
+  F("number?", number_p);
+  F("pair?", pair_p);
+  F("strng?", string_p);
+  F("boolean?", boolean_p);
+  F("procedure?", procedure_p);
+  F("symbol?", symbol_p);
 
-  FV("list", list_);
-  FV("append", append_);
-  F("reverse", reverse);
-
+  F("not", not_);
   F("break", break_);
 
   MV("defmacro", defmacro);
@@ -243,6 +135,10 @@ void init_func(VM &vm) {
   FV("puts", puts);
   FV("display", display);
   FV("write", write);
+
+  lib_number_init(vm);
+  lib_list_init(vm);
+  lib_string_init(vm);
 }
 
 } // namespace cxxlisp
