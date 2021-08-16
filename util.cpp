@@ -8,11 +8,11 @@ using namespace std;
 
 Value run(VM &vm, string_view src) {
   init_func(vm);
-  Parser parser{&vm, src};
-  Value result = NIL;
+  Parser parser{vm, src};
+  Value result = UNDEF;
   for (;;) {
     Value code = parser.Read();
-    if (code.IsNil())
+    if (code == END_OF_SOURCE)
       break;
     if (vm.EnableTrace) {
       cout << "trace: " << code << endl;

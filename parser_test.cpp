@@ -46,7 +46,7 @@ TEST(ParserTest, ReadWithComment) {
       {"(#;(2) )", "()"},
   };
   for (auto const src : srcs) {
-    Parser p{&vm, src[0]};
+    Parser p{vm, src[0]};
     auto v = p.Read();
     EXPECT_EQ(src[1], v.ToString(vm));
   }
@@ -60,7 +60,7 @@ TEST(ParserTest, ReadWithDot) {
       {"(1 . (2 3))", "(1 2 3)"},
   };
   for (auto const src : srcs) {
-    Parser p{&vm, src[0]};
+    Parser p{vm, src[0]};
     auto v = p.Read();
     EXPECT_EQ(src[1], v.ToString(vm));
   }
@@ -75,7 +75,7 @@ TEST(ParserTest, ReadWithReadMacro) {
       {",1", "(unquote 1)"},
   };
   for (auto const src : srcs) {
-    Parser p{&vm, src[0]};
+    Parser p{vm, src[0]};
     auto v = p.Read();
     EXPECT_EQ(src[1], v.ToString(vm));
   }

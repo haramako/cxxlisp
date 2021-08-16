@@ -154,7 +154,7 @@ Value Parser::Read() {
   Token t = next();
   switch (t.Type) {
   case TokenType::EOS:
-    return NIL;
+    return END_OF_SOURCE;
 
   case TokenType::NUMBER:
     return Value(t.Number);
@@ -186,11 +186,12 @@ Value Parser::Read() {
   }
 
   case TokenType::IDENT:
-    return Value(vm_->Intern(t.Str));
+    return Value(vm_.Intern(t.Str));
   case TokenType::STRING:
     return Value(t.Str);
+  default:
+    throw BUG();
   }
-  return NIL;
 }
 
 Value Parser::parseList() {

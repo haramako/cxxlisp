@@ -39,7 +39,7 @@ public:
 };
 
 class Parser {
-  VM *vm_;
+  VM &vm_;
 
   std::string s_;
   Token cur_;
@@ -57,7 +57,7 @@ public:
   int Line() const { return line_; }
   int Pos() const { return pos_; }
 
-  Parser(VM *vm, std::string_view s) : vm_(vm), s_(s) {}
+  Parser(VM &vm, std::string_view s) : vm_(vm), s_(s) {}
   Value Read();
 };
 

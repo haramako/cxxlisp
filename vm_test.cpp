@@ -29,7 +29,7 @@ TEST(EnvTest, GetFromUpper) {
 
 static Value compile(VM &vm, string_view src) {
   init_func(vm);
-  Parser parser{&vm, src};
+  Parser parser{vm, src};
   Value code = parser.Read();
   // cout << "code " << code << endl;
   Value result = Compiler().Compile(vm, code);
