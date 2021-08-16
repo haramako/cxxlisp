@@ -89,6 +89,28 @@ Value Compiler::doLambda(Ctx &ctx, Value rest) {
   return cons(car(rest), doBegin(ctx, cdr(rest)));
 }
 
+Value Compiler::doLetDecl(Ctx &ctx, Value rest) {
+  if (rest.IsNil()) {
+    return NIL;
+  } else {
+    return cons(doSet(ctx, car(rest)), doLetDecl(ctx, cdr(rest)));
+  }
+}
+
+Value Compiler::doLet(Ctx &ctx, Value rest) {
+  return cons(doLetDecl(ctx, car(rest)), doBegin(ctx, cdr(rest)));
+}
+
+Value Compiler::doCond(Ctx &ctx, Value rest) {
+  if (rest.IsNil()) {
+    return NIL;
+  } else {
+    Value head = car(rest);
+    return cons(cons(doValue(ctx, car(head)), doBegin(ctx, cdr(head))),
+                doCond(ctx, cdr(rest)));
+  }
+}
+
 Value Compiler::doValue(Ctx &ctx, Value code) {
   switch (code.Type()) {
   case ValueType::CELL: {
@@ -133,6 +155,10 @@ Value Compiler::doForm(Ctx &ctx, Value code) {
       return code;
     case SpecialForm::LOOP:
       return cons(head, doBegin(ctx, pair.Cdr));
+    case SpecialForm::LET:
+      return cons(head, doLet(ctx, pair.Cdr));
+    case SpecialForm::COND:
+      return cons(head, doCond(ctx, pair.Cdr));
     default: {
       Value f;
       // Macro transform.
@@ -216,6 +242,41 @@ Value Eval::doLoop(Ctx &ctx, Value rest) {
   }
 }
 
+void Eval::doLetDecl(Ctx &ctx, Env &new_env, Value rest) {
+  if (rest.IsNil()) {
+    return;
+  } else {
+    auto [name, expr] = uncons<Atom, Value>(car(rest));
+    new_env.Define(name, doValue(ctx, expr));
+
+    doLetDecl(ctx, new_env, cdr(rest));
+  }
+}
+
+Value Eval::doLet(Ctx &ctx, Value rest) {
+  Env *new_env = new Env(ctx.vm, ctx.env);
+  Ctx new_ctx{ctx.vm, new_env, rest};
+  doLetDecl(ctx, *new_env, car(rest));
+  return doBegin(new_ctx, cdr(rest));
+}
+Value Eval::doCond(Ctx &ctx, Value rest) {
+  if (rest.IsNil()) {
+    return UNDEF;
+  }
+
+  Value head = car(rest);
+  if (car(head) == SYM_ELSE) {
+    return doBegin(ctx, cdr(head));
+  } else {
+    Value v = doValue(ctx, car(head));
+    if (v.Truthy()) {
+      return doBegin(ctx, cdr(head));
+    } else {
+      return doCond(ctx, cdr(rest));
+    }
+  }
+}
+
 Value Eval::doValue(Ctx &ctx, Value code) {
   switch (code.Type()) {
   case ValueType::CELL: {
@@ -268,6 +329,10 @@ Value Eval::doForm(Ctx &ctx, Value code) {
       return doLoop(ctx, pair.Cdr);
     case SpecialForm::SET_EX:
       return doSet(ctx, pair.Cdr);
+    case SpecialForm::LET:
+      return doLet(ctx, pair.Cdr);
+    case SpecialForm::COND:
+      return doCond(ctx, pair.Cdr);
     default:
       break;
     }
@@ -351,8 +416,11 @@ VM::VM() : rootEnv_(this, nullptr) {
   Intern("loop");
   Intern("set!");
   Intern("unquote-splicing");
+  Intern("let");
+  Intern("cond");
+  Intern("else");
 
-  // cout << Intern("quote").Id() << " " << (int)SpecialForm::QUOTE << endl;
+  assert(atomIdToKey_.size() == (size_t)SpecialForm::MAX);
 }
 
 Atom VM::Intern(const char *v) {

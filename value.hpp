@@ -32,6 +32,9 @@ extern Value SYM_QUASIQUOTE;
 extern Value SYM_UNQUOTE;
 extern Value SYM_LAMBDA;
 extern Value SYM_UNQUOTE_SPLICING;
+extern Value SYM_LET;
+extern Value SYM_COND;
+extern Value SYM_ELSE;
 
 //[[no_unique_address]]
 class noncopyable {
@@ -63,14 +66,6 @@ enum class ValueType : uint8_t {
   CUSTOM_OBJECT,
 };
 
-enum class SpecialType {
-  IF,
-  QUOTE,
-  LAMBDA,
-  DEFINE,
-  BEGIN,
-};
-
 enum class SpecialForm {
   BEGIN = 0,
   DEFINE,
@@ -82,6 +77,10 @@ enum class SpecialForm {
   LOOP,
   SET_EX,
   UNQUOTE_SPLICING,
+  LET,
+  COND,
+  ELSE,
+  MAX,
 };
 
 extern const char *VALUE_TYPE_NAMES[];

@@ -24,6 +24,9 @@ Value SYM_UNQUOTE = Value::CreateSpecialForm(SpecialForm::UNQUOTE);
 Value SYM_LAMBDA = Value::CreateSpecialForm(SpecialForm::LAMBDA);
 Value SYM_UNQUOTE_SPLICING =
     Value::CreateSpecialForm(SpecialForm::UNQUOTE_SPLICING);
+Value SYM_LET = Value::CreateSpecialForm(SpecialForm::LET);
+Value SYM_COND = Value::CreateSpecialForm(SpecialForm::COND);
+Value SYM_ELSE = Value::CreateSpecialForm(SpecialForm::ELSE);
 
 const char *VALUE_TYPE_NAMES[] = {
     "NIL",  "SPECIAL", "NUMBER",    "ATOM",

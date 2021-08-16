@@ -90,14 +90,19 @@ TEST(EvalTest, Simple) {
       {"(1 (2 (3 4)))", R"(`(1 (2 ,'(3 4))))"},
       {"(1 2 3)", R"(`(1 ,@'(2 3)))"},
       {"(1 2 3 4)", R"(`(1 ,@'(2 3) 4))"},
+      {"(1 2)", R"((let ((a 1) (b 2)) (list a b)))"},
+      {"10", R"((cond (#t 10) (#f 20)))"},
+      {"30", R"((cond (#f 10) (#f 20) (else 30)))"},
       //{"1", R"((begin (define x 1) ((lambda () y))))"},
   };
 
   for (const auto &t : tests) {
     VM vm;
+    init_func(vm);
+
     // vm.EnableTrace = true;
     // vm.EnableTraceMacroExpand = true;
-    init_func(vm);
+
     Value result = run(vm, get<1>(t));
     EXPECT_EQ(get<0>(t), result.ToString());
   }

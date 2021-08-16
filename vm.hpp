@@ -44,6 +44,9 @@ class Compiler {
   Value doIf(Ctx &ctx, Value rest);
   Value doQuote(Ctx &ctx, Value rest);
   Value doLambda(Ctx &ctx, Value rest);
+  Value doLetDecl(Ctx &ctx, Value rest);
+  Value doLet(Ctx &ctx, Value rest);
+  Value doCond(Ctx &ctx, Value rest);
 
   Value doValue(Ctx &ctx, Value code);
   Value doList(Ctx &ctx, Value code);
@@ -62,6 +65,9 @@ class Eval {
   Value doQuote(Ctx &ctx, Value rest);
   Value doLambda(Ctx &ctx, Value rest);
   Value doLoop(Ctx &ctx, Value rest);
+  void doLetDecl(Ctx &ctx, Env &new_env, Value rest);
+  Value doLet(Ctx &ctx, Value rest);
+  Value doCond(Ctx &ctx, Value rest);
 
   Value doValue(Ctx &ctx, Value code);
   Value doList(Ctx &ctx, Value code);
