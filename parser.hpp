@@ -38,6 +38,8 @@ public:
   }
 };
 
+class EndOfSourceException : public std::exception {};
+
 class Parser {
   VM &vm_;
 

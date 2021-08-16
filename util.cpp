@@ -11,9 +11,13 @@ Value run(VM &vm, string_view src) {
   Parser parser{vm, src};
   Value result = UNDEF;
   for (;;) {
-    Value code = parser.Read();
-    if (code == END_OF_SOURCE)
+    Value code;
+    try {
+      code = parser.Read();
+    } catch (EndOfSourceException &) {
       break;
+    }
+
     if (vm.EnableTrace) {
       cout << "trace: " << code << endl;
     }

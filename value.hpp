@@ -27,7 +27,6 @@ extern Value NIL;
 extern Value BOOL_F;
 extern Value BOOL_T;
 extern Value UNDEF;
-extern Value END_OF_SOURCE;
 
 extern Value SYM_QUOTE;
 extern Value SYM_QUASIQUOTE;

@@ -18,7 +18,6 @@ Value NIL;
 Value BOOL_T = Value::CreateSpecial("#t");
 Value BOOL_F = Value::CreateSpecial("#f");
 Value UNDEF = Value::CreateSpecial("#undef");
-Value END_OF_SOURCE = Value::CreateSpecial("#end-of-source");
 
 Value SYM_QUOTE = Value::CreateSpecialForm(SpecialForm::QUOTE);
 Value SYM_QUASIQUOTE = Value::CreateSpecialForm(SpecialForm::QUASIQUOTE);

@@ -154,7 +154,7 @@ Value Parser::Read() {
   Token t = next();
   switch (t.Type) {
   case TokenType::EOS:
-    return END_OF_SOURCE;
+    throw EndOfSourceException();
 
   case TokenType::NUMBER:
     return Value(t.Number);
