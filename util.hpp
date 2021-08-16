@@ -139,6 +139,17 @@ template <typename T> Procedure *make_procedure(T func) {
   return new Procedure(pc.Arity(), pc);
 }
 
+template <typename T>
+void add_proc(VM &vm, bool is_macro, const char *id, T f) {
+  auto *proc = make_procedure(f);
+  proc->SetName(id);
+  proc->SetIsMacro(is_macro);
+  vm.RootEnv().Define(vm.Intern(id), proc);
+}
+
+void add_proc_varg(VM &vm, bool is_macro, const char *id,
+                   Value (*f)(Ctx &, Value));
+
 /**
  * Iterator of cons list.
  *

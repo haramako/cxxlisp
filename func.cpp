@@ -212,37 +212,16 @@ static Value qq(Ctx &ctx, Value x, int depth) {
 
 static Value quasiquote(Ctx &ctx, Cell &args) { return qq(ctx, &args, 0); }
 
-#define F(id, f)                                                               \
-  {                                                                            \
-    auto *proc = make_procedure(f);                                            \
-    proc->SetName(id);                                                         \
-    env.Define(vm.Intern(id), proc);                                           \
-  }
-#define FVARG(id, f)                                                           \
-  {                                                                            \
-    auto *proc = new Procedure(-1, f);                                         \
-    proc->SetName(id);                                                         \
-    env.Define(vm.Intern(id), proc);                                           \
-  }
-#define MACRO(id, f)                                                           \
-  {                                                                            \
-    auto *proc = make_procedure(f);                                            \
-    proc->SetIsMacro(true);                                                    \
-    env.Define(vm.Intern(id), proc);                                           \
-  }
-#define MACRO_VARG(id, f)                                                      \
-  {                                                                            \
-    auto *proc = new Procedure(-1, f);                                         \
-    proc->SetIsMacro(true);                                                    \
-    env.Define(vm.Intern(id), proc);                                           \
-  }
+#define F(id, f) add_proc(vm, false, id, f);
+#define FV(id, f) add_proc_varg(vm, false, id, f);
+#define M(id, f) add_proc(vm, true, id, f);
+#define MV(id, f) add_proc_varg(vm, true, id, f);
 
 void init_func(VM &vm) {
-  auto &env = vm.RootEnv();
-  FVARG("+", add);
-  FVARG("-", sub);
-  FVARG(">", greater);
-  FVARG("<", less);
+  FV("+", add);
+  FV("-", sub);
+  FV(">", greater);
+  FV("<", less);
 
   F("cons", cons_);
   F("car", car_);
@@ -250,20 +229,20 @@ void init_func(VM &vm) {
   F("pair?", pair_p);
   F("null?", null_p);
 
-  FVARG("list", list_);
-  FVARG("append", append_);
+  FV("list", list_);
+  FV("append", append_);
   F("reverse", reverse);
 
   F("break", break_);
 
-  MACRO_VARG("defmacro", defmacro);
+  MV("defmacro", defmacro);
   F("procedure-set-name!", procedure_set_name);
   F("procedure-set-macro!", procedure_set_macro);
-  MACRO("quasiquote", quasiquote);
+  M("quasiquote", quasiquote);
 
-  FVARG("puts", puts);
-  FVARG("display", display);
-  FVARG("write", write);
+  FV("puts", puts);
+  FV("display", display);
+  FV("write", write);
 }
 
 } // namespace cxxlisp

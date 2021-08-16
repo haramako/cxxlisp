@@ -28,4 +28,12 @@ Value run(VM &vm, string_view src) {
   return result;
 }
 
+void add_proc_varg(VM &vm, bool is_macro, const char *id,
+                   Value (*f)(Ctx &, Value)) {
+  auto *proc = new Procedure(-1, f);
+  proc->SetName(id);
+  proc->SetIsMacro(is_macro);
+  vm.RootEnv().Define(vm.Intern(id), proc);
+}
+
 } // namespace cxxlisp
