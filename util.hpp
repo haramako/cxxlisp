@@ -1,6 +1,8 @@
 #pragma once
-
 #include "value.hpp"
+#include "vm.hpp"
+
+#include <utility>
 
 namespace cxxlisp {
 
@@ -48,6 +50,15 @@ template <typename... REST> inline Value list(Value v, REST... rest) {
   return new Cell(v, list(rest...));
 }
 
+/*
+ * Create tuple from array and types.
+ * See: https://stackoverflow.com/questions/15014096
+ */
+template <typename... T, std::size_t... Is>
+std::tuple<T...> make_tuple_vals(Value *v, std::index_sequence<Is...>) {
+  return std::make_tuple(val_as<T>(v[Is])...);
+}
+
 /**
  * uncons.
  *
@@ -62,8 +73,7 @@ template <typename... T> std::tuple<T...> uncons(Value pair) {
     vals[i] = pair.AsCell().Car;
     pair = pair.AsCell().Cdr;
   }
-  int i = n - 1;
-  return std::make_tuple(val_as<T>(vals[i--])...);
+  return make_tuple_vals<T...>(vals, std::make_index_sequence<sizeof...(T)>());
 }
 
 /**
@@ -85,8 +95,7 @@ template <typename... T> std::tuple<T...> uncons_rest(Value pair) {
       pair = pair.AsCell().Cdr;
     }
   }
-  int i = n - 1;
-  return std::make_tuple(val_as<T>(vals[i--])...);
+  return make_tuple_vals<T...>(vals, std::make_index_sequence<sizeof...(T)>());
 }
 
 /**
@@ -106,23 +115,28 @@ template <typename... T> class ProcCaller {
   using FuncType = Value (*)(Ctx &, T...);
   FuncType f_;
 
+  template <std::size_t... Is>
+  Value call(Ctx &ctx, Value *vals, std::index_sequence<Is...>) {
+    return f_(ctx, val_as<T>(vals[Is])...);
+  }
+
 public:
   static const int ARITY = sizeof...(T);
 
   ProcCaller(FuncType f) : f_(f) {}
 
-  Value operator()(Ctx &vm, Value args) {
+  Value operator()(Ctx &ctx, Value args) {
     Value vals[ARITY];
     spread(ARITY, vals, args);
-    int i = ARITY;
-    return f_(vm, val_as<T>(vals[--i])...);
+    return call(ctx, vals, std::make_index_sequence<sizeof...(T)>());
   }
 
   int Arity() { return ARITY; }
 };
 
 template <typename T> Procedure *make_procedure(T func) {
-  return new Procedure(ProcCaller(func).Arity(), ProcCaller(func));
+  auto pc = ProcCaller(func);
+  return new Procedure(pc.Arity(), pc);
 }
 
 /**

@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 3.1)
 enable_language(CXX)
+set(CMAKE_CXX_COMPILER "/usr/bin/clang++" CACHE STRING "clang++ compiler" FORCE)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_FLAGS "-O2 -Wall -Wextra -Wno-unused-parameter -Wno-sequence-point")
+# "-Wno-unused-parameter"はclangとgccで[maybe_unused]の挙動が違うため一時的に無効化
+set(CMAKE_CXX_FLAGS "-O2 -Wall -Wextra -Wno-unused-parameter -Wno-sequence-point -Wno-unused-private-field")
 set(CMAKE_LD_FLAGS "-lgc")
 find_package(GTest REQUIRED)
 find_library(gc NAMES libgc.a)

@@ -21,7 +21,7 @@ using atom_id_t = int;
 using vint_t = int;
 
 class VM;
-class Ctx;
+struct Ctx;
 class CustomObject;
 class Cell;
 class StringValue;
@@ -163,7 +163,6 @@ public:
     chk(ValueType::CELL);
     return ref<Cell>();
   }
-  const Cell &AsCell() const { return AsCell(); }
 
   const StringValue &AsStringValue() {
     chk(ValueType::STRING);
@@ -175,7 +174,6 @@ public:
     chk(ValueType::PROCEDURE);
     return ref<Procedure>();
   }
-  const Procedure &AsProcedure() const { return AsProcedure(); }
 
   const CustomObject &AsCustomObject() {
     chk(ValueType::CUSTOM_OBJECT);

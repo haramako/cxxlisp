@@ -17,7 +17,7 @@ struct Ctx : public noncopyable {
 };
 
 class Env : public gc_cleanup, noncopyable {
-  VM *vm_;
+  VM *vm_; // unused tempolary
   Env *upper_;
   std::unordered_map<atom_id_t, Value> map_;
 

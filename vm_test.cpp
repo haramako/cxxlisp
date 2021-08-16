@@ -36,6 +36,14 @@ static Value compile(VM &vm, string_view src) {
   return result;
 }
 
+TEST(CompilerTest, Uncons) {
+  Value v = list(1, "2", NIL);
+  auto [a, b, c] = uncons<vint_t, const string &, Value>(v);
+  EXPECT_EQ(1, a);
+  EXPECT_EQ("2", b);
+  EXPECT_EQ(NIL, c);
+}
+
 TEST(CompilerTest, Simple) {
   tuple<const char *, const char *> tests[] = {
       // {expect, test}

@@ -5,8 +5,6 @@
 
 namespace cxxlisp {
 
-class Ctx;
-
 /**
  * Base class of lisp exceptions.
  */
