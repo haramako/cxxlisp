@@ -106,6 +106,10 @@ static Value qq(Ctx &ctx, Value x, int depth) {
 
 static Value quasiquote(Ctx &ctx, Cell &args) { return qq(ctx, &args, 0); }
 
+static Value load(Ctx &ctx, const string &filename) {
+  return run_file(*ctx.vm, filename);
+}
+
 #define F(id, f) add_proc(vm, false, id, f);
 #define FV(id, f) add_proc_varg(vm, false, id, f);
 #define M(id, f) add_proc(vm, true, id, f);
@@ -131,6 +135,8 @@ void lib_core_init(VM &vm) {
   FV("puts", puts);
   FV("display", display);
   FV("write", write);
+
+  F("load", load);
 }
 
 } // namespace cxxlisp

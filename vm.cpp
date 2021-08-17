@@ -408,7 +408,7 @@ void lib_number_init(VM &vm);
 void lib_list_init(VM &vm);
 void lib_string_init(VM &vm);
 
-VM::VM() : rootEnv_(this, nullptr) {
+VM::VM(bool init_core, bool init_func) : rootEnv_(this, nullptr) {
   Default = this;
 
   Intern("begin");
@@ -427,10 +427,15 @@ VM::VM() : rootEnv_(this, nullptr) {
 
   assert(atomIdToKey_.size() == (size_t)SpecialForm::MAX);
 
-  lib_core_init(*this);
-  lib_number_init(*this);
-  lib_list_init(*this);
-  lib_string_init(*this);
+  if (init_core) {
+    lib_core_init(*this);
+    lib_number_init(*this);
+    lib_list_init(*this);
+    lib_string_init(*this);
+    if (init_func) {
+      run_file(*this, "lib/prelude.lisp");
+    }
+  }
 }
 
 Atom VM::Intern(const char *v) {

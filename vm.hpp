@@ -91,8 +91,6 @@ class VM : public noncopyable {
   std::vector<std::string> atomIdToKey_;
   Env rootEnv_;
 
-  void init();
-
 public:
   bool EnableStackTrace = true;
   bool EnableTrace = false;
@@ -100,7 +98,7 @@ public:
 
   static VM *Default;
 
-  VM();
+  VM(bool init_core = true, bool init_func = true);
 
   Atom Intern(const char *v);
   Atom Intern(const std::string &v) { return Intern(v.c_str()); }

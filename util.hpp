@@ -213,6 +213,7 @@ T foldc(Value list, std::function<T(const T &, const T &)> f) {
 }
 
 Value run(VM &vm, std::string_view src);
+Value run_file(VM &vm, std::string_view src);
 
 // pretty_print.cpp
 const int PRETTY_PRINT_DEFAULT_LEN = 256;

@@ -1,5 +1,7 @@
-#include "util.hpp"
+#include <fstream>
+
 #include "parser.hpp"
+#include "util.hpp"
 #include "vm.hpp"
 
 namespace cxxlisp {
@@ -29,6 +31,16 @@ Value run(VM &vm, string_view src) {
     result = Eval().Execute(vm, code);
   }
   return result;
+}
+
+Value run_file(VM &vm, string_view path) {
+  ifstream fs(string(path).c_str());
+  if (!fs.is_open()) {
+    throw LispException("Can't open '"s + string(path) + "'.");
+  }
+
+  string src((istreambuf_iterator<char>(fs)), istreambuf_iterator<char>());
+  return run(vm, src);
 }
 
 void add_proc_varg(VM &vm, bool is_macro, const char *id,
