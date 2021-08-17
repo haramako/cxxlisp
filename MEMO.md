@@ -23,6 +23,8 @@
   - スタックトレース
   
 - quasiqoute
+* (load filename)
+* (a | b) => (a (b))
 
 # 基本方針
 

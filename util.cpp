@@ -7,7 +7,6 @@ namespace cxxlisp {
 using namespace std;
 
 Value run(VM &vm, string_view src) {
-  init_func(vm);
   Parser parser{vm, src};
   Value result = UNDEF;
   for (;;) {

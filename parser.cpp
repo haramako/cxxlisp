@@ -8,7 +8,7 @@ namespace cxxlisp {
 
 using namespace std;
 
-const static regex RE_NUMBER(R"(^[0-9]+)");
+const static regex RE_NUMBER(R"(^[-+]?[0-9]+)");
 const static regex RE_IDENT(R"(^[a-zA-Z_\-+*/<>=!?][a-zA-Z_\-+*/<>=!?.1-9]*)");
 const static regex RE_STRING(R"(^"([^"]*)\")");
 const static regex RE_SYMBOL(R"(^[()\[\]{}.#\\'`,@;])");

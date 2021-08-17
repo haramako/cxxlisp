@@ -7,16 +7,29 @@ namespace cxxlisp {
 
 using namespace std;
 
+static Value cons_(Ctx &ctx, Value v1, Value v2) { return new Cell(v1, v2); }
+static Value car_(Ctx &ctx, Cell &v) { return v.Car; }
+static Value cdr_(Ctx &ctx, Cell &v) { return v.Cdr; }
+static Value set_car_i(Ctx &ctx, Cell &c, Value v) { return c.Car = v; }
+static Value set_cdr_i(Ctx &ctx, Cell &c, Value v) { return c.Cdr = v; }
+
 static Value list_(Ctx &ctx, Value args) { return args; }
 
 static Value append_(Ctx &ctx, Value args) {
   Value head = car(args);
-  Value tail = car(args);
+  Value tail = head;
+
+  if (head.IsNil()) {
+    return append_(ctx, cdr(args));
+  }
+
   for (Value rest = cdr(args); !rest.IsNil(); rest = cdr(rest)) {
     while (!cdr(tail).IsNil()) {
       tail = cdr(tail);
     }
-    tail.AsCell().Cdr = car(rest);
+    if (!car(rest).IsNil()) {
+      tail.AsCell().Cdr = car(rest);
+    }
   }
   return head;
 }
@@ -28,12 +41,6 @@ static Value reverse(Ctx &ctx, Value args) {
   }
   return head;
 }
-
-static Value cons_(Ctx &ctx, Value v1, Value v2) { return new Cell(v1, v2); }
-static Value car_(Ctx &ctx, Cell &v) { return v.Car; }
-static Value cdr_(Ctx &ctx, Cell &v) { return v.Cdr; }
-static Value set_car_i(Ctx &ctx, Cell &c, Value v) { return c.Car = v; }
-static Value set_cdr_i(Ctx &ctx, Cell &c, Value v) { return c.Cdr = v; }
 
 #define F(id, f) add_proc(vm, false, id, f);
 #define FV(id, f) add_proc_varg(vm, false, id, f);

@@ -10,7 +10,6 @@ using namespace std;
 
 int main(int argc, char **argv) {
   VM vm;
-  init_func(vm);
 
   for (int i = 1; i < argc; i++) {
     if ("-t"s == argv[i]) {

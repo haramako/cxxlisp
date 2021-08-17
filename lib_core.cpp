@@ -111,11 +111,7 @@ static Value quasiquote(Ctx &ctx, Cell &args) { return qq(ctx, &args, 0); }
 #define M(id, f) add_proc(vm, true, id, f);
 #define MV(id, f) add_proc_varg(vm, true, id, f);
 
-void lib_number_init(VM &vm);
-void lib_list_init(VM &vm);
-void lib_string_init(VM &vm);
-
-void init_func(VM &vm) {
+void lib_core_init(VM &vm) {
   F("null?", null_p);
   F("number?", number_p);
   F("pair?", pair_p);
@@ -135,10 +131,6 @@ void init_func(VM &vm) {
   FV("puts", puts);
   FV("display", display);
   FV("write", write);
-
-  lib_number_init(vm);
-  lib_list_init(vm);
-  lib_string_init(vm);
 }
 
 } // namespace cxxlisp

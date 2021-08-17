@@ -403,6 +403,11 @@ Value Eval::Execute(VM &vm, Value code) {
 // VM
 //===================================================================
 
+void lib_core_init(VM &vm);
+void lib_number_init(VM &vm);
+void lib_list_init(VM &vm);
+void lib_string_init(VM &vm);
+
 VM::VM() : rootEnv_(this, nullptr) {
   Default = this;
 
@@ -421,6 +426,11 @@ VM::VM() : rootEnv_(this, nullptr) {
   Intern("else");
 
   assert(atomIdToKey_.size() == (size_t)SpecialForm::MAX);
+
+  lib_core_init(*this);
+  lib_number_init(*this);
+  lib_list_init(*this);
+  lib_string_init(*this);
 }
 
 Atom VM::Intern(const char *v) {

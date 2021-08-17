@@ -28,7 +28,6 @@ TEST(EnvTest, GetFromUpper) {
 }
 
 static Value compile(VM &vm, string_view src) {
-  init_func(vm);
   Parser parser{vm, src};
   Value code = parser.Read();
   // cout << "code " << code << endl;
@@ -98,7 +97,6 @@ TEST(EvalTest, Simple) {
 
   for (const auto &t : tests) {
     VM vm;
-    init_func(vm);
 
     // vm.EnableTrace = true;
     // vm.EnableTraceMacroExpand = true;

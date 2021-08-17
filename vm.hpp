@@ -123,7 +123,4 @@ public:
   Value Result() const { return result_; }
 };
 
-// From func.cpp
-void init_func(VM &vm);
-
 } // namespace cxxlisp
