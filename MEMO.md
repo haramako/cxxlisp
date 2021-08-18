@@ -2,18 +2,10 @@
 # TODO
 
 - lexer/parser
-  - ; コメント
-  - ""
-  - #f
-  - #t
-  - #;
   x #! shebang
   x #x
   * #\, #\space, #\newline, #\return, #\null
   x #""
-  - ' = quote
-  - ` = quasi-quote
-  - , = unquote
   x リードマクロ
 
   
@@ -26,7 +18,7 @@
 - (load filename)
 - macro-expand
 - macro-expand1
-- equal
+- equal?
 
 
 # 基本方針
@@ -69,8 +61,8 @@ procedure
 - cond(else,=>)
 
 - defmacro
-* macro-expand
-* macro-expand1
+- macro-expand
+- macro-expand1
 - loop/break
 
 # 関数

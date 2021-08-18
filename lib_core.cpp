@@ -84,10 +84,6 @@ static Value macroexpand_1(Ctx &ctx, Value code) {
   return Compiler().ExpandOne(ctx, code);
 }
 
-static Value load(Ctx &ctx, const string &filename) {
-  return run_file(*ctx.vm, filename);
-}
-
 static Value puts(Ctx &ctx, Value args) {
   for (Value p = args; !p.IsNil(); p = cdr(p)) {
     Value v = car(p);
@@ -116,6 +112,22 @@ static Value write(Ctx &ctx, Value args) {
     cout << v;
   }
   return NIL;
+}
+
+static Value load(Ctx &ctx, const string &filename) {
+  return run_file(*ctx.vm, filename);
+}
+
+static Value equal_p(Ctx &ctx, Value a, Value b) {
+  if (a.IsCell()) {
+    if (equal_p(ctx, car(a), car(b)).Truthy()) {
+      return equal_p(ctx, cdr(a), cdr(b));
+    } else {
+      return false;
+    }
+  } else {
+    return a == b;
+  }
 }
 
 #define F(id, f) add_proc(vm, false, id, f);
@@ -147,6 +159,7 @@ void lib_core_init(VM &vm) {
   FV("write", write);
 
   F("load", load);
+  F("equal?", equal_p);
 }
 
 } // namespace cxxlisp
