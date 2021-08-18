@@ -23,8 +23,11 @@
   - スタックトレース
   
 - quasiqoute
-* (load filename)
-* (a | b) => (a (b))
+- (load filename)
+- macro-expand
+- macro-expand1
+- equal
+
 
 # 基本方針
 
@@ -58,12 +61,12 @@ procedure
 
 - define
 - set!
-* let
+- let
 
 - lambda
 
 - if
-* cond(else,=>)
+- cond(else,=>)
 
 - defmacro
 * macro-expand
@@ -104,7 +107,7 @@ procedure
 # その他
 
 - define は (define name value) or (define (func arg ...) body ...) の両方対応
-- define-macro も同様
+- defmacro も同様
 
 - ?vectorは、i8,i16,i32,cahr,valueなど、型がある
 
@@ -118,3 +121,23 @@ procedure
   - {+ @1 @2}
 
 - httpサーバーを組み込む
+
+
+* 簡易文法
+  * (a | b) => (a (b))
+  * ( ... !(a b) c d) => ( ...(a b (c d)))
+
+```
+(let ((a 1) (b 2))
+  (puts a)
+  (puts b))
+
+!(let ((a 1) (b 2)))
+(puts a)
+(puts b)
+
+!(let | (a 1) (b 2))
+(puts a)
+(puts b)
+```
+

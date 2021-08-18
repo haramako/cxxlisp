@@ -23,6 +23,8 @@
        (set! ,(car num-expr) (+ ,(car num-expr) 1))
        ))))
 
+
+;; dotime
 (dotimes (x 10) (display x " "))
 (newline)
 

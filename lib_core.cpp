@@ -35,36 +35,6 @@ static Value defmacro(Ctx &ctx, Value args) {
       list(i("procedure-set-macro!"), cons(i("lambda"), arg_list, code)));
 }
 
-static Value puts(Ctx &ctx, Value args) {
-  for (Value p = args; !p.IsNil(); p = cdr(p)) {
-    Value v = car(p);
-    cout << v;
-    if (!cdr(p).IsNil()) {
-      cout << " ";
-    }
-  }
-  cout << endl;
-  return NIL;
-}
-
-static Value display(Ctx &ctx, Value args) {
-  for (auto v : args) {
-    if (v.IsString()) {
-      cout << v.AsString();
-    } else {
-      cout << v;
-    }
-  }
-  return NIL;
-}
-
-static Value write(Ctx &ctx, Value args) {
-  for (auto v : args) {
-    cout << v;
-  }
-  return NIL;
-}
-
 static Value qq(Ctx &ctx, Value x, int depth) {
   auto i = [&](const char *a) { return ctx.vm->Intern(a); };
 
@@ -106,8 +76,46 @@ static Value qq(Ctx &ctx, Value x, int depth) {
 
 static Value quasiquote(Ctx &ctx, Cell &args) { return qq(ctx, &args, 0); }
 
+static Value macroexpand(Ctx &ctx, Value code) {
+  return Compiler().Expand(ctx, code);
+}
+
+static Value macroexpand_1(Ctx &ctx, Value code) {
+  return Compiler().ExpandOne(ctx, code);
+}
+
 static Value load(Ctx &ctx, const string &filename) {
   return run_file(*ctx.vm, filename);
+}
+
+static Value puts(Ctx &ctx, Value args) {
+  for (Value p = args; !p.IsNil(); p = cdr(p)) {
+    Value v = car(p);
+    cout << v;
+    if (!cdr(p).IsNil()) {
+      cout << " ";
+    }
+  }
+  cout << endl;
+  return NIL;
+}
+
+static Value display(Ctx &ctx, Value args) {
+  for (auto v : args) {
+    if (v.IsString()) {
+      cout << v.AsString();
+    } else {
+      cout << v;
+    }
+  }
+  return NIL;
+}
+
+static Value write(Ctx &ctx, Value args) {
+  for (auto v : args) {
+    cout << v;
+  }
+  return NIL;
 }
 
 #define F(id, f) add_proc(vm, false, id, f);
@@ -131,6 +139,8 @@ void lib_core_init(VM &vm) {
   F("procedure-set-name!", procedure_set_name);
   F("procedure-set-macro!", procedure_set_macro);
   M("quasiquote", quasiquote);
+  F("macroexpand", macroexpand);
+  F("macroexpand-1", macroexpand_1);
 
   FV("puts", puts);
   FV("display", display);

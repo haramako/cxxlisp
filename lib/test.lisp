@@ -6,7 +6,7 @@
      (if (= v ,must)
 	 (display ".")
        (set! test-err-count (+ test-err-count 1))
-       (display "\nFAIL: " ,@msg ". expect " ',must " but " v ", expr = " ',expr "\n"))))
+       (display "\nFAIL: " ,@msg ". expect " ,must " but " v ", expr = " ',expr "\n"))))
 
 (define (test-finish)
   (display "\n" test-count " tests finished.\n")

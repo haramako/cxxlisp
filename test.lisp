@@ -15,4 +15,9 @@
 (expect '(2) (list-tail '(0 1 2) 2))
 (expect 3 (let ((li '(0 1 2))) (list-set! li 1 3) (list-ref li 1)))
 
+(defmacro x (a) `(puts ,a))
+(expect '(puts 1) (macroexpand '(x 1)))
+(expect '(puts (puts 1)) (macroexpand '(x (x 1))))
+(expect '(puts (x 1)) (macroexpand-1 '(x (x 1))))
+
 (test-finish)

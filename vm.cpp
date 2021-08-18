@@ -111,10 +111,10 @@ Value Compiler::doCond(Ctx &ctx, Value rest) {
   }
 }
 
-Value Compiler::doValue(Ctx &ctx, Value code) {
+Value Compiler::doValue(Ctx &ctx, Value code, bool one) {
   switch (code.Type()) {
   case ValueType::CELL: {
-    return doForm(ctx, code);
+    return doForm(ctx, code, one);
   }
   default:
     return code;
@@ -133,7 +133,7 @@ Value Compiler::doList(Ctx &ctx, Value code) {
   }
 }
 
-Value Compiler::doForm(Ctx &ctx, Value code) {
+Value Compiler::doForm(Ctx &ctx, Value code, bool one) {
   // cout << "C:" << code << endl;
   Cell &pair = code.AsCell();
   Value head = pair.Car;
@@ -165,7 +165,11 @@ Value Compiler::doForm(Ctx &ctx, Value code) {
       if (ctx.vm->RootEnv().Get(atom, f) && f.IsProcedure()) {
         if (f.AsProcedure().IsMacro()) {
           Value result = Eval().Call(ctx, f, cdr(code));
-          return doValue(ctx, result);
+          if (one) {
+            return result;
+          } else {
+            return doValue(ctx, result);
+          }
         }
       }
     }
@@ -184,6 +188,12 @@ Value Compiler::Compile(VM &vm, Value code) {
     throw;
   }
   return result;
+}
+
+Value Compiler::Expand(Ctx &ctx, Value code) { return doValue(ctx, code); }
+
+Value Compiler::ExpandOne(Ctx &ctx, Value code) {
+  return doValue(ctx, code, true);
 }
 
 //===================================================================

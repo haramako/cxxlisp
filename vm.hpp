@@ -48,13 +48,15 @@ class Compiler {
   Value doLet(Ctx &ctx, Value rest);
   Value doCond(Ctx &ctx, Value rest);
 
-  Value doValue(Ctx &ctx, Value code);
+  Value doValue(Ctx &ctx, Value code, bool one = false);
   Value doList(Ctx &ctx, Value code);
-  Value doForm(Ctx &ctx, Value code);
+  Value doForm(Ctx &ctx, Value code, bool one = false);
 
 public:
   Compiler() {}
   Value Compile(VM &vm, Value code);
+  Value Expand(Ctx &ctx, Value code);
+  Value ExpandOne(Ctx &ctx, Value code);
 };
 
 class Eval {
